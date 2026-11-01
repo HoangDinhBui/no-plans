@@ -25,8 +25,36 @@ func TestLoad(t *testing.T) {
 	}
 	valid["AUTH_ISSUER"] = "https://auth.example/auth/v1"
 	valid["APP_ENV"] = "production"
+	valid["AUTH_API_KEY"] = "public-key"
 	valid["DATABASE_URL"] = "postgres://local:local@localhost/no_plans?sslmode=disable"
 	if _, err := Load(get); err == nil {
 		t.Fatal("insecure production database accepted")
+	}
+}
+
+func TestProductionRequiresAuthAPIKey(t *testing.T) {
+	values := map[string]string{"APP_ENV": "production", "DATABASE_URL": "postgres://api@database.example/no_plans?sslmode=verify-full", "AUTH_ISSUER": "https://auth.example/auth/v1", "AUTH_AUDIENCE": "authenticated"}
+	get := func(key string) string { return values[key] }
+	if _, err := Load(get); err == nil {
+		t.Fatal("production started without provider API key")
+	}
+	values["AUTH_API_KEY"] = "public-key"
+	if _, err := Load(get); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCORSRejectsWildcardAndNonOriginURLs(t *testing.T) {
+	values := map[string]string{"DATABASE_URL": "postgres://api@localhost/no_plans", "AUTH_ISSUER": "http://localhost:54321/auth/v1", "AUTH_AUDIENCE": "authenticated"}
+	get := func(k string) string { return values[k] }
+	for _, value := range []string{"*", "https://example.com/path", "https://user:pass@example.com", "https://example.com?secret=x"} {
+		values["CORS_ORIGINS"] = value
+		if _, err := Load(get); err == nil {
+			t.Fatalf("invalid origin accepted: %s", value)
+		}
+	}
+	values["CORS_ORIGINS"] = "http://localhost:8081, https://app.example.com"
+	if _, err := Load(get); err != nil {
+		t.Fatal(err)
 	}
 }

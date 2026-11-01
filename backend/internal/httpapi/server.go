@@ -11,6 +11,13 @@ import (
 
 // New exposes public probes. A missing readiness dependency fails closed.
 func New(readiness func(context.Context) error) http.Handler {
+	return withHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestID := w.Header().Get("X-Request-ID")
+		serveProbe(w, r, readiness, requestID)
+	}))
+}
+
+func withHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := make([]byte, 16)
 		if _, err := rand.Read(id); err != nil {
@@ -22,30 +29,36 @@ func New(readiness func(context.Context) error) http.Handler {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		if r.URL.Path != "/healthz" && r.URL.Path != "/readyz" {
-			writeJSON(w, 404, map[string]string{"code": "not_found", "request_id": requestID})
-			return
-		}
-		if r.Method != http.MethodGet && r.Method != http.MethodHead {
-			w.Header().Set("Allow", "GET, HEAD")
-			writeJSON(w, 405, map[string]string{"code": "method_not_allowed", "request_id": requestID})
-			return
-		}
-		status, value := 200, "ok"
-		if r.URL.Path == "/readyz" {
-			value = "ready"
-			ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
-			defer cancel()
-			if readiness == nil || readiness(ctx) != nil {
-				status, value = 503, "unavailable"
-			}
-		}
-		if r.Method == http.MethodHead {
-			w.WriteHeader(status)
-			return
-		}
-		writeJSON(w, status, map[string]string{"status": value, "request_id": requestID})
+		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+		defer cancel()
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func serveProbe(w http.ResponseWriter, r *http.Request, readiness func(context.Context) error, requestID string) {
+	if r.URL.Path != "/healthz" && r.URL.Path != "/readyz" {
+		writeJSON(w, 404, map[string]string{"code": "not_found", "request_id": requestID})
+		return
+	}
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		w.Header().Set("Allow", "GET, HEAD")
+		writeJSON(w, 405, map[string]string{"code": "method_not_allowed", "request_id": requestID})
+		return
+	}
+	status, value := 200, "ok"
+	if r.URL.Path == "/readyz" {
+		value = "ready"
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+		if readiness == nil || readiness(ctx) != nil {
+			status, value = 503, "unavailable"
+		}
+	}
+	if r.Method == http.MethodHead {
+		w.WriteHeader(status)
+		return
+	}
+	writeJSON(w, status, map[string]string{"status": value, "request_id": requestID})
 }
 
 func writeJSON(w http.ResponseWriter, status int, body any) {

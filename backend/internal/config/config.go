@@ -11,12 +11,15 @@ type Config struct {
 	DatabaseURL  string
 	AuthIssuer   string
 	AuthAudience string
+	AuthAPIKey   string
+	CORSOrigins  []string
 	Environment  string
 }
 
 // Load validates configuration without including secret values in errors.
 func Load(getenv func(string) string) (Config, error) {
 	c := Config{HTTPAddr: getenv("HTTP_ADDR"), DatabaseURL: getenv("DATABASE_URL"), AuthIssuer: getenv("AUTH_ISSUER"), AuthAudience: getenv("AUTH_AUDIENCE"), Environment: getenv("APP_ENV")}
+	c.AuthAPIKey = getenv("AUTH_API_KEY")
 	if c.HTTPAddr == "" {
 		c.HTTPAddr = ":8080"
 	}
@@ -40,11 +43,27 @@ func Load(getenv func(string) string) (Config, error) {
 		return Config{}, fmt.Errorf("AUTH_ISSUER must be an HTTP(S) issuer URL")
 	}
 	if c.Environment == "production" {
+		if strings.TrimSpace(c.AuthAPIKey) == "" {
+			return Config{}, fmt.Errorf("production AUTH_API_KEY is required")
+		}
 		if issuer.Scheme != "https" {
 			return Config{}, fmt.Errorf("production AUTH_ISSUER requires HTTPS")
 		}
 		if db.Query().Get("sslmode") != "verify-full" {
 			return Config{}, fmt.Errorf("production DATABASE_URL requires sslmode=verify-full")
+		}
+	}
+	if value := getenv("CORS_ORIGINS"); strings.TrimSpace(value) != "" {
+		for _, candidate := range strings.Split(value, ",") {
+			origin := strings.TrimSpace(candidate)
+			u, parseErr := url.Parse(origin)
+			if parseErr != nil || u == nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || strings.Contains(origin, "*") {
+				return Config{}, fmt.Errorf("CORS_ORIGINS must contain exact HTTP(S) origins")
+			}
+			if c.Environment == "production" && u.Scheme != "https" {
+				return Config{}, fmt.Errorf("production CORS_ORIGINS requires HTTPS")
+			}
+			c.CORSOrigins = append(c.CORSOrigins, origin)
 		}
 	}
 	c.AuthIssuer = strings.TrimRight(c.AuthIssuer, "/")

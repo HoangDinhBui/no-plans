@@ -20,6 +20,7 @@ var (
 type Plan struct {
 	ID       string            `json:"id"`
 	OwnerID  string            `json:"owner_id"`
+	GroupID  string            `json:"group_id,omitempty"`
 	Title    string            `json:"title"`
 	Activity string            `json:"activity"`
 	StartsAt time.Time         `json:"starts_at"`
@@ -44,7 +45,7 @@ func New(id, owner, title, activity string, startsAt time.Time, capacity int, no
 }
 
 func validDetails(title string, at time.Time, capacity int, now time.Time) bool {
-	return strings.TrimSpace(title) != "" && utf8.RuneCountInString(title) <= 120 && at.After(now) && capacity >= 0
+	return strings.TrimSpace(title) != "" && utf8.RuneCountInString(title) <= 120 && at.After(now) && capacity >= 0 && capacity <= 1<<31-1
 }
 func (p *Plan) closed() bool { return p.Status != "inviting" && p.Status != "confirmed" }
 func (p *Plan) Going() int {

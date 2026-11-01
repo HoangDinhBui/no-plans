@@ -22,7 +22,7 @@ func TestResponseRechecksTimeAfterLockWait(t *testing.T) {
 		t.Skip("TEST_DATABASE_URL required")
 	}
 	ctx := context.Background()
-	s, err := Open(ctx, url)
+	s, err := openTestStore(t, ctx, url)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ func TestPostgresLastSeatAndOutbox(t *testing.T) {
 		t.Skip("TEST_DATABASE_URL required: dedicated disposable PostgreSQL database")
 	}
 	ctx := context.Background()
-	s, err := Open(ctx, url)
+	s, err := openTestStore(t, ctx, url)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func TestPostgresLastSeatAndOutbox(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Open a second pool so the contention cannot be hidden by process-local locking.
-	second, err := Open(ctx, url)
+	second, err := Open(ctx, s.db.Config().ConnConfig.ConnString())
 	if err != nil {
 		t.Fatal(err)
 	}

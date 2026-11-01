@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/HoangDinhBui/no-plans/backend/internal/auth"
 	"github.com/HoangDinhBui/no-plans/backend/internal/config"
 	"github.com/HoangDinhBui/no-plans/backend/internal/httpapi"
 	"github.com/HoangDinhBui/no-plans/backend/internal/store"
@@ -35,7 +36,9 @@ func run() error {
 		return err
 	}
 	defer db.Close()
-	srv := &http.Server{Addr: cfg.HTTPAddr, Handler: httpapi.New(db.Ping), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 20 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
+	verifier := auth.NewVerifier(cfg.AuthIssuer, cfg.AuthAudience, nil)
+	email := auth.NewEmailGate(cfg.AuthIssuer, cfg.AuthAPIKey, nil)
+	srv := &http.Server{Addr: cfg.HTTPAddr, Handler: httpapi.NewApplication(db, verifier, email, cfg.CORSOrigins...), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 20 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
 	result := make(chan error, 1)
 	go func() { slog.Info("api listening", "addr", cfg.HTTPAddr); result <- srv.ListenAndServe() }()
 	select {

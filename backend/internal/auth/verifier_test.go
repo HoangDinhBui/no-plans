@@ -133,3 +133,47 @@ func TestCachedKeyDoesNotWaitForSlowRefresh(t *testing.T) {
 		t.Fatal("cached-key verification blocked on JWKS refresh")
 	}
 }
+
+func TestConcurrentFirstRequestsShareJWKSLoad(t *testing.T) {
+	key, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	entered := make(chan struct{})
+	release := make(chan struct{})
+	var once sync.Once
+	var finish sync.Once
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		once.Do(func() { close(entered) })
+		<-release
+		_ = json.NewEncoder(w).Encode(map[string]any{"keys": []any{map[string]string{"kty": "EC", "crv": "P-256", "alg": "ES256", "kid": "initial", "x": base64.RawURLEncoding.EncodeToString(key.X.FillBytes(make([]byte, 32))), "y": base64.RawURLEncoding.EncodeToString(key.Y.FillBytes(make([]byte, 32)))}}})
+	}))
+	defer server.Close()
+	defer finish.Do(func() { close(release) })
+	v := NewVerifier(server.URL, "authenticated", server.Client())
+	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{"sub": "00000000-0000-4000-8000-000000000001", "iss": server.URL, "aud": "authenticated", "role": "authenticated", "exp": time.Now().Add(time.Hour).Unix()})
+	token.Header["kid"] = "initial"
+	raw, _ := token.SignedString(key)
+	first := make(chan error, 1)
+	second := make(chan error, 1)
+	go func() { _, err := v.Verify(context.Background(), raw); first <- err }()
+	select {
+	case <-entered:
+	case <-time.After(time.Second):
+		t.Fatal("JWKS load never started")
+	}
+	go func() { _, err := v.Verify(context.Background(), raw); second <- err }()
+	select {
+	case err := <-second:
+		t.Fatalf("concurrent valid token rejected before shared refresh completed: %v", err)
+	case <-time.After(30 * time.Millisecond):
+	}
+	finish.Do(func() { close(release) })
+	for _, result := range []chan error{first, second} {
+		select {
+		case err := <-result:
+			if err != nil {
+				t.Fatal(err)
+			}
+		case <-time.After(time.Second):
+			t.Fatal("verification stuck")
+		}
+	}
+}

@@ -83,7 +83,14 @@ func (s *Store) CreatePlan(ctx context.Context, p *plans.Plan) error {
 		return err
 	}
 	defer tx.Rollback(ctx)
-	_, err = tx.Exec(ctx, `INSERT INTO plans(id,owner_id,title,activity,starts_at,capacity,status,location,version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, p.ID, p.OwnerID, p.Title, p.Activity, p.StartsAt, p.Capacity, p.Status, p.Location, p.Version)
+	if err = insertPlan(ctx, tx, p); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func insertPlan(ctx context.Context, tx pgx.Tx, p *plans.Plan) error {
+	_, err := tx.Exec(ctx, `INSERT INTO plans(id,owner_id,title,activity,starts_at,capacity,status,location,version,group_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,NULLIF($10,'')::uuid)`, p.ID, p.OwnerID, p.Title, p.Activity, p.StartsAt, p.Capacity, p.Status, p.Location, p.Version, p.GroupID)
 	if err != nil {
 		return err
 	}
@@ -95,7 +102,7 @@ func (s *Store) CreatePlan(ctx context.Context, p *plans.Plan) error {
 	if err = event(ctx, tx, p.ID, p.OwnerID, "plan.created", p.Version); err != nil {
 		return err
 	}
-	return tx.Commit(ctx)
+	return nil
 }
 
 func (s *Store) GetPlan(ctx context.Context, id, actor string) (*plans.Plan, error) {
@@ -116,12 +123,12 @@ func (s *Store) GetPlan(ctx context.Context, id, actor string) (*plans.Plan, err
 }
 
 func load(ctx context.Context, tx pgx.Tx, id, actor string, lock bool) (*plans.Plan, error) {
-	query := `SELECT id::text,owner_id::text,title,activity,starts_at,capacity,status,location,version FROM plans WHERE id=$1 AND EXISTS(SELECT 1 FROM plan_members WHERE plan_id=plans.id AND user_id=$2)`
+	query := `SELECT id::text,owner_id::text,title,activity,starts_at,capacity,status,location,version,COALESCE(group_id::text,'') FROM plans WHERE id=$1 AND EXISTS(SELECT 1 FROM plan_members WHERE plan_id=plans.id AND user_id=$2)`
 	if lock {
 		query += " FOR UPDATE"
 	}
 	p := &plans.Plan{Members: map[string]string{}}
-	err := tx.QueryRow(ctx, query, id, actor).Scan(&p.ID, &p.OwnerID, &p.Title, &p.Activity, &p.StartsAt, &p.Capacity, &p.Status, &p.Location, &p.Version)
+	err := tx.QueryRow(ctx, query, id, actor).Scan(&p.ID, &p.OwnerID, &p.Title, &p.Activity, &p.StartsAt, &p.Capacity, &p.Status, &p.Location, &p.Version, &p.GroupID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, plans.ErrForbidden
 	}
@@ -178,6 +185,9 @@ func (s *Store) Respond(ctx context.Context, id, actor, response string) (bool, 
 }
 
 func event(ctx context.Context, tx pgx.Tx, id, actor, kind string, version int64) error {
+	if err := audit(ctx, tx, actor, kind, id); err != nil {
+		return err
+	}
 	_, err := tx.Exec(ctx, `INSERT INTO outbox(plan_id,actor_id,kind,payload) VALUES($1::uuid,$2::uuid,$3,jsonb_build_object('plan_id',($1::uuid)::text,'version',$4::bigint))`, id, actor, kind, version)
 	return err
 }
