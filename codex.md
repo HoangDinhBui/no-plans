@@ -35,11 +35,11 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 - Chưa có mã nguồn sản phẩm, dependency hoặc hạ tầng cloud.
 - Trợ lý đã gửi thiết kế và hỏi duyệt kiến trúc trước triển khai theo skill brainstorming; người dùng tiếp theo yêu cầu lưu ngữ cảnh và khởi tạo/push Git, chưa xác nhận riêng kiến trúc.
 - Đã tạo README.md và codex.md.
-- Đang thực hiện khởi tạo Git, commit và push. Xem `git status`, `git log` và `git remote -v` để kiểm tra kết quả thực tế; không suy luận push thành công từ dòng này.
+- Đã khởi tạo Git, tạo commit `e988f74` (`first commit`) gồm README, thiết kế và file ngữ cảnh; đã push thành công lên `origin/main`, nhánh local `main` theo dõi `origin/main`.
 
 ## Công việc tiếp theo
 
-1. Hoàn tất và kiểm tra commit/push repository theo yêu cầu.
+1. Duy trì codex.md cùng các mốc phát triển tiếp theo; repository đã được khởi tạo và push.
 2. Chốt kiến trúc khi có xác nhận của người dùng, sau đó lập kế hoạch triển khai.
 3. Triển khai vertical slice: nền tảng local → auth → nhóm → kèo → mời → RSVP → chốt/hủy.
 4. Kiểm thử phân quyền, transaction/capacity và luồng hai tài khoản trước khi mở rộng voting, discovery, push.
