@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.expo/
+dist/
+coverage/
+*.exe
+*.test
+backend/bin/
+.superpowers/
+.worktrees/
+.local/

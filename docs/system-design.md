@@ -1,6 +1,6 @@
 # NO PLANS — Thiết kế MVP
 
-Ngày: 01/11/2026. Trạng thái: đề xuất để duyệt trước triển khai.
+Ngày: 01/11/2026. Trạng thái: người dùng đã duyệt và yêu cầu triển khai.
 
 ## Nguồn và phạm vi
 
@@ -20,7 +20,7 @@ Mục tiêu: giúp nhóm bạn tại Việt Nam tạo và chốt cuộc hẹn nh
 - Push qua Expo Push Service; dùng development build để kiểm thử thiết bị thật. AdMob chỉ tích hợp sau luồng lõi và cấu hình phê duyệt, consent, test ads.
 - Triển khai phát triển bằng Docker Compose; production cần tài khoản dịch vụ, domain và lựa chọn hosting riêng.
 
-Các lựa chọn trên do trợ lý đề xuất, chưa phải quyết định đã được người dùng duyệt. Phiên bản SDK và thư viện sẽ được kiểm tra tài liệu chính thức lúc triển khai.
+Các lựa chọn trên đã được người dùng duyệt trong chat ngày 01/11/2026. Phiên bản SDK và thư viện được kiểm tra tài liệu chính thức lúc triển khai.
 
 ## Kiến trúc
 
@@ -137,4 +137,4 @@ Mục tiêu beta đề xuất: API p95 dưới 500ms không tính dịch vụ ng
 - Web MVP đề xuất cho xem preview, đăng nhập và RSVP; bỏ phiếu/quản lý đầy đủ trên mobile.
 - Màn hình vertical slice: đăng nhập, danh sách kèo, nhóm và thành viên, tạo kèo, chi tiết/RSVP/chốt/hủy, web invite. Tiêu chí nghiệm thu: hai tài khoản có thể chạy trọn luồng với dữ liệu bền vững qua restart; tài khoản thứ ba không có lời mời không đọc được chi tiết; tranh chỗ cuối không vượt capacity.
 
-Đề xuất bắt đầu bằng vertical slice mobile Expo + API Go + PostgreSQL, dùng Supabase Auth cho đăng nhập; sau đó mở rộng đủ MVP theo các giai đoạn trên. Chưa thực hiện scaffold, cài dependency, tạo dịch vụ đám mây hoặc phát hành.
+Bắt đầu bằng vertical slice mobile Expo + API Go + PostgreSQL, dùng Supabase Auth cho đăng nhập; sau đó mở rộng đủ MVP theo các giai đoạn trên. Tiến độ thực tế nằm trong codex.md; chưa triển khai dịch vụ cloud hoặc phát hành.

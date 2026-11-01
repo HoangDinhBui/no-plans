@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: no_plans
+      POSTGRES_USER: no_plans
+      POSTGRES_PASSWORD: no_plans_local
+    ports:
+      - "127.0.0.1:54322:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U no_plans -d no_plans"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+volumes:
+  postgres_data:
