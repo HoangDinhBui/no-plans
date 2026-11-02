@@ -2,6 +2,7 @@ import type { PlanDraft } from './plan-input.ts';
 type Storage = { getItem(key: string): Promise<string | null>; setItem(key: string, value: string): Promise<void>; removeItem(key: string): Promise<void> };
 type Record = { version: 1; draft: PlanDraft; pending?: { signature: string; key: string; preparedAt: number; draftSignature?: string } };
 export const emptyDraft = (): PlanDraft => ({ title: '', activity: 'coffee', date: '', time: '19:30', capacity: '', location: '', group_id: '' });
+const canonical = (value: unknown): string => JSON.stringify(value, (_key, item) => item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) : item);
 export class DraftStore {
   private storage: Storage; private uuid: () => string; private now: () => number;
   private queues = new Map<string, Promise<void>>();
@@ -15,6 +16,7 @@ export class DraftStore {
       const record = JSON.parse(raw) as Record;
       if (record.version !== 1 || !record.draft || Object.keys(emptyDraft()).some(k => typeof record.draft[k as keyof PlanDraft] !== 'string')) throw new Error();
       if (record.pending && (typeof record.pending.signature !== 'string' || typeof record.pending.key !== 'string' || !/^[\x21-\x7e]{1,128}$/.test(record.pending.key) || !Number.isFinite(record.pending.preparedAt))) throw new Error();
+      if (record.pending) JSON.parse(record.pending.signature);
       return record;
     } catch { throw new Error('Chưa đọc được bản nháp. Kiểm tra kèo đã tạo trước khi xóa bản nháp trên thiết bị.'); }
   }
@@ -31,13 +33,13 @@ export class DraftStore {
     return this.serial(actor, async () => { const record = await this.read(actor); record.draft = copy; await this.storage.setItem(this.key(actor), JSON.stringify(record)); });
   }
   prepare(actor: string, draft: PlanDraft, payload: unknown): Promise<string> {
-    const copy = { ...draft }; const signature = JSON.stringify(payload);
+    const copy = { ...draft }; const signature = canonical(payload);
     return this.serial(actor, async () => {
       const record = await this.read(actor); const now = this.now();
       // Server replay records live24h. Leave a safety margin and require reconciliation after this window.
       if (record.pending && (now - record.pending.preparedAt >= 23 * 3600000 || now < record.pending.preparedAt)) throw new Error('Lần tạo trước đã quá lâu. Hãy kiểm tra danh sách kèo trước khi xóa bản nháp và tạo lại.');
-      if (!record.pending || record.pending.signature !== signature) record.pending = { signature, key: this.uuid(), preparedAt: now };
-      record.pending.draftSignature = JSON.stringify(copy);
+      if (!record.pending || canonical(JSON.parse(record.pending.signature)) !== signature) record.pending = { signature, key: this.uuid(), preparedAt: now };
+      record.pending.draftSignature = canonical(copy);
       record.draft = copy;
       await this.storage.setItem(this.key(actor), JSON.stringify(record));
       return record.pending.key;
@@ -47,7 +49,7 @@ export class DraftStore {
     return this.serial(actor, async () => {
       const record = await this.read(actor);
       if (record.pending?.key !== key) return;
-      if (record.pending.draftSignature === JSON.stringify(record.draft)) await this.storage.removeItem(this.key(actor));
+      if (record.pending.draftSignature && canonical(JSON.parse(record.pending.draftSignature)) === canonical(record.draft)) await this.storage.removeItem(this.key(actor));
       else { delete record.pending; await this.storage.setItem(this.key(actor), JSON.stringify(record)); }
     });
   }

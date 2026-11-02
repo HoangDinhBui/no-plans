@@ -41,3 +41,14 @@ test('completion preserves newer edits even before they are prepared for submiss
   assert.equal(retained.draft.title, 'Bản nháp mới');
   assert.equal(retained.pending, undefined);
 });
+test('retry key survives equivalent payload property order changes across app upgrades', async () => {
+  let n = 0; const storage = memory();
+  const first = new DraftStore(storage, () => `key-${++n}`);
+  const key = await first.prepare('alice', draft, { title: draft.title, capacity: 0 });
+  // The previously shipped version stored insertion-order JSON rather than canonical JSON.
+  const legacy = JSON.parse(storage.data.get('no-plans.plan-draft.alice')!);
+  legacy.pending.signature = JSON.stringify({ title: draft.title, capacity: 0 });
+  storage.data.set('no-plans.plan-draft.alice', JSON.stringify(legacy));
+  const restarted = new DraftStore(storage, () => `key-${++n}`);
+  assert.equal(await restarted.prepare('alice', draft, { capacity: 0, title: draft.title }), key);
+});

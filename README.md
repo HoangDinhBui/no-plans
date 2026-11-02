@@ -76,4 +76,6 @@ Kiểm tra: `npm test`, `npm run build`; cài browser riêng bằng `npx playwri
 
 Hiện có auth, danh sách kèo, tạo kèo, RSVP, hồ sơ và danh sách/tạo nhóm. Chưa hoàn tất các luồng quản lý/voting/discovery/deep links và chưa kiểm thử thiết bị. Icons còn là template Expo. Các lệnh kiểm tra: `npm test`, `npm run typecheck`, `npm run lint`, `npm run export`. Export bundle không thay thế native build, kiểm thử UI hay beta verification.
 
+Chủ kèo có thể sửa thông tin với If-Match, chốt, hủy hoặc kết thúc sau giờ hẹn. Xung đột version giữ nguyên bản sửa; người dùng chủ động bỏ bản sửa và tải snapshot mới để kiểm tra. Lỗi kết nối khi refresh giữ form hiện tại, còn lỗi quyền truy cập xóa chi tiết riêng tư.
+
 Form tạo kèo lưu nháp theo tài khoản trên thiết bị, giữ khóa retry qua reload và chỉ gửi sau khi lưu được khóa. Lần gửi không rõ kết quả quá23 giờ yêu cầu kiểm tra danh sách trước khi bỏ nháp để tránh gửi lại ngoài cửa sổ replay của server. Nháp chứa nội dung bạn nhập, không chứa JWT. `npm run test:e2e` kiểm tra Expo web với HTTP fixtures bằng Chromium riêng (`npx playwright install chromium`); chưa thay thế luồng native/Go/Supabase cloud thực.

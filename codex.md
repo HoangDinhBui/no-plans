@@ -87,6 +87,17 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Quy ước lưu tiến độ
 
+## Mobile owner actions đang hoàn thiện — 2026-11-02
+
+- Base909493c, hiện có thay đổi chưa commit: OwnerPlan UI cho sửa tên/ngày/giờ/địa điểm/capacity, confirm, cancel và complete. Hủy/kết thúc có xác nhận; các action theo owner/status/thời gian thực; member không thấy controls chủ kèo.
+- Edit giữ Plan snapshot và version khi mở form. PATCH chỉ gửi trường thay đổi, bảo toàn timestamp chưa sửa kể cả seconds/milliseconds.409 giữ nguyên bản sửa và refetch; chỉ nút “Bỏ bản sửa, lấy thông tin mới” mới cập nhật snapshot/version. Không tự ghi đè thay đổi đồng thời.
+- Refactor plan-input thành planDetails/vietnamTime/planInput dùng chung create/edit; kiểm tra capacity không dưới số đang đi, location bắt buộc khi confirmed và ngày giờ tương lai. Backend vẫn là nguồn kiểm tra quyền/trạng thái cuối cùng.
+-16 pure unit tests PASS, TypeScript/ESLint PASS;7 Expo web browser tests PASS:3 regression cũ và4 owner flow (conflict+edit+confirm+cancel, member không thấy owner controls, past confirmed complete, conflict refresh503 giữ form). Browser dùng controlled HTTP fixtures; Go/provider/device thực chưa được kiểm chứng xuyên suốt.
+- Đã thêm synchronous generation invalidation khi gọi resource.reload để GET cũ không ghi đè state sau mutation trước effect cleanup.
+- Reviewer tìm P2: transient refetch lỗi làm mất editor sau409 hoặc polling. Đã tái hiện browser RED rồi giữ cache cùng signature khi lỗi transient;401/403/404/410 vẫn xóa private content. Regression GREEN, full browser7/7 PASS.
+- Refactor tạo payload đổi thứ tự JSON có thể làm key retry của nháp cũ bị xoay: test RED; DraftStore nay so JSON canonical và đọc signature legacy để giữ key qua upgrade, test GREEN. Unit fixture có dữ liệu insertion-order như phiên bản trước. Lần kiểm tra cuối:16 unit tests, TypeScript/ESLint và export Android/iOS/web PASS; browser suite7/7 PASS trên source hiện tại.
+- Chưa commit; chưa hoàn tất task5/mobile và scope startup đầy đủ. Còn mobile friends/groups, invite/share/revoke, voting/discovery, native picker/deep links, safety/settings và device tests; worker/operations/CI/beta theo plan.
+
 ## Mobile draft/retry và privacy đang hoàn thiện — 2026-11-02
 
 - Checkpoint nền mobile fed67eb. Hiện đang thay đổi chưa commit: DraftStore AsyncStorage phân vùng theo actor, hàng đợi ghi, lưu intent trước gửi API, restore khi navigation/restart, giữ key khi payload không đổi. Intent cũ>=23h hoặc clock lùi bị chặn, yêu cầu kiểm tra danh sách trước khi xóa nháp vì server chỉ giữ replay24h. Xóa nháp có xác nhận và giải thích không hủy kèo.
