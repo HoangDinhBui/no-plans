@@ -87,6 +87,16 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Quy ước lưu tiến độ
 
+## Mobile draft/retry và privacy đang hoàn thiện — 2026-11-02
+
+- Checkpoint nền mobile fed67eb. Hiện đang thay đổi chưa commit: DraftStore AsyncStorage phân vùng theo actor, hàng đợi ghi, lưu intent trước gửi API, restore khi navigation/restart, giữ key khi payload không đổi. Intent cũ>=23h hoặc clock lùi bị chặn, yêu cầu kiểm tra danh sách trước khi xóa nháp vì server chỉ giữ replay24h. Xóa nháp có xác nhận và giải thích không hủy kèo.
+- Form chọn nhóm có pagination, không dừng ở100 nhóm. Bản nháp bị lỗi/storage unavailable có đường tải lại/xóa rõ ràng, không gửi request khi chưa lưu key.
+- Browser test đã chứng minh Expo UI/Auth SDK với HTTP fixtures: POST mất kết nối, reload khôi phục form, retry cùng key và clear nháp sau success. Đây không phải Supabase cloud/Go xuyên suốt hay thiết bị thật.
+- Known403 từ RSVP trước đây vẫn hiện private location đến khi GET refetch xong: browser test RED; đã thêm resource.reject và generation guard, test GREEN. Test bổ sung GET cũ authorized đến muộn không khôi phục private content cũng PASS.
+- Review độc lập phát hiện2 lỗi: prepare đang chờ storage rồi đổi actor có thể gửi dưới phiên mới; complete intent cũ có thể xóa nháp vừa sửa. Đã có2 regression RED→GREEN: API scope gắn generation trước prepare, screen guard khi unmount; complete so snapshot submitted-draft, giữ edits mới và chỉ bỏ completed intent.
+-12 pure TypeScript tests PASS. Ảnh QA phát hiện Unexpected text node do chuỗi rỗng trong JSX; thêm browser console assertion tái hiện RED rồi sửa điều kiện thành boolean trong các màn mobile. Lần kiểm tra cuối:12 unit tests, TypeScript, ESLint và3 Expo web browser tests đều PASS; export Android/iOS/web PASS. Đã xem ảnh sau sửa, không còn toast render.
+- Mobile task5 vẫn chưa hoàn tất: native date/time picker, friends/group membership, owner actions, voting/discovery, deep links, settings/block/report, polish UI và thiết bị thật. Worker/safety/CI/beta vẫn theo scope gốc.
+
 ## Mobile đang triển khai — 2026-11-02
 
 - Checkpoint invite/voting/web đã commit88164f3. Working tree hiện có apps/mobile mới, task5 chưa hoàn tất.

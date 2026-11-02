@@ -50,3 +50,11 @@ test('session invalidation rejects an already-authorized delayed response', asyn
   release(new Response(JSON.stringify({ location: 'private' })));
   await assert.rejects(pending, (e: unknown) => e instanceof APIError && e.code === 'cancelled');
 });
+test('a prepared operation cannot start under a replacement session', async () => {
+  let calls = 0; let token = 'alice';
+  const api = new APIClient('https://api.example', () => token, async () => { calls++; return new Response('{}'); });
+  const scope = api.captureScope();
+  token = 'bob'; api.invalidate();
+  await assert.rejects(api.request('/plans', { method: 'POST', body: { title: 'Alice private draft' }, scope }), (e: unknown) => e instanceof APIError && e.code === 'cancelled');
+  assert.equal(calls, 0);
+});

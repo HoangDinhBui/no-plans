@@ -12,7 +12,7 @@ export class APIError extends Error {
   code: string; status: number;
   constructor(code: string, status = 0) { super(messages[code] ?? 'Chưa thực hiện được thao tác. Hãy thử lại.'); this.code = code; this.status = status; }
 }
-type Options = { method?: string; body?: unknown; key?: string; version?: number; signal?: AbortSignal; inviteToken?: string; public?: boolean };
+type Options = { method?: string; body?: unknown; key?: string; version?: number; signal?: AbortSignal; inviteToken?: string; public?: boolean; scope?: number };
 export class APIClient {
   private generation = 0;
   private base: string; private accessToken: () => string | null; private fetcher: typeof fetch;
@@ -20,7 +20,9 @@ export class APIClient {
     this.base = base.replace(/\/$/, ''); this.accessToken = accessToken; this.fetcher = fetcher;
   }
   invalidate() { this.generation++; }
+  captureScope() { return this.generation; }
   async request<T>(path: string, options: Options = {}): Promise<T> {
+    if (options.scope !== undefined && options.scope !== this.generation) throw new APIError('cancelled');
     const generation = this.generation;
     const headers = new Headers({ Accept: 'application/json' });
     if (!options.public) { const token = this.accessToken(); if (!token) throw new APIError('unauthorized', 401); headers.set('Authorization', `Bearer ${token}`); }
