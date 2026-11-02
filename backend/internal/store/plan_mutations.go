@@ -29,6 +29,15 @@ func (s *Store) changePlan(ctx context.Context, id, actor, kind string, change f
 	if err = change(p); err != nil {
 		return err
 	}
+	if kind == "plan.confirm" && p.SelectedOptionID != "" {
+		var optionKind string
+		if err = tx.QueryRow(ctx, "SELECT kind FROM place_options WHERE plan_id=$1 AND id=$2", id, p.SelectedOptionID).Scan(&optionKind); err != nil {
+			return err
+		}
+		if optionKind == "idea" {
+			return ErrVenueRequired
+		}
+	}
 	if _, err = tx.Exec(ctx, `UPDATE plans SET title=$2,starts_at=$3,capacity=$4,location=$5,status=$6,version=$7,selected_option_id=NULLIF($8,'')::uuid WHERE id=$1`, id, p.Title, p.StartsAt, p.Capacity, p.Location, p.Status, p.Version, p.SelectedOptionID); err != nil {
 		return err
 	}

@@ -19,7 +19,7 @@ async function fixture(page: Page, actor = owner, past = false) {
     const req = route.request(); const path = new URL(req.url()).pathname;
     if (req.method() === 'OPTIONS') { await route.fulfill({ status: 204, headers }); return; }
     expect(req.headers().authorization).toBe('Bearer ' + jwt);
-    if (path === '/v1/friend-requests' || path.endsWith('/members') || path.endsWith('/invite-links')) { await route.fulfill({ headers, json: { items: [] } }); return; }
+    if (path === '/v1/friend-requests' || path.endsWith('/members') || path.endsWith('/invite-links') || path.endsWith('/options')) { await route.fulfill({ headers, json: { items: [] } }); return; }
     if (req.method() === 'GET' && path === '/v1/plans/' + id && state.failReads > 0) { state.failReads--; await route.fulfill({ status: 503, headers, json: { code: 'unavailable' } }); return; }
     if (req.method() === 'PATCH') {
       state.patches.push({ body: req.postDataJSON(), version: req.headers()['if-match'] });

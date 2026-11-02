@@ -99,4 +99,6 @@ Preview public giới hạn120 request/phút theo direct peer IP trong process (
 
 Voting chỉ mở khi plan inviting và chưa bắt đầu. Chốt/hủy/bắt đầu khóa thay đổi; edit location thủ công xóa selected_option_id. Mỗi option chụp tên/địa chỉ tại lúc thêm; đổi catalogue không thay location đã chọn. Ý tưởng hoạt động không có địa chỉ thực: owner cần bổ sung địa điểm cụ thể trước buổi hẹn.
 
+Migration006 bổ sung snapshot `kind` (place/idea) vào option. Option custom là place; option từ catalogue lấy loại tại lúc thêm. Ideas vẫn nhận phiếu nhưng không được dùng làm location qua `/selection`: trả409 `venue_required`. Chốt mới cũng từ chối selected idea legacy; owner có thể nhập địa điểm cụ thể bằng PATCH (xóa selected_option_id) hoặc chọn một venue. Migration backfill kind từ catalogue hiện tại và không tự sửa lịch sử kèo đã confirmed; sửa tên/sức chứa của legacy confirmed vẫn được phép theo validation thông thường.
+
 Catalogue kind=place có source_url HTTPS và checked_at; kind=idea là đề xuất nội dung. Budget null có nghĩa chưa xác minh, bị loại khi có filter max_budget. people là khoảng số người gợi ý, không phải thông tin chỗ trống thời gian thực. Không có endpoint admin catalogue public; dùng cmd/seed với operator role. INVITE_TOKEN_SECRET cần base64 của32 byte; chưa cấu hình trả503 khi tạo link, production từ chối khởi động nếu thiếu.

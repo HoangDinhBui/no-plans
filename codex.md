@@ -87,6 +87,14 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Quy ước lưu tiến độ
 
+## Voting/discovery mobile + option kind đang hoàn thiện — 2026-11-02
+
+- Base010193c. Đã tái hiện2 PostgreSQL tests RED: catalogue idea có thể thành location và legacy idea selection có thể confirm. Migration006 thêm snapshot place_options.kind, backfill từ catalogue hiện tại (custom defaultplace). Add/list trả kind; select idea trả409 venue_required. Chốt mới chặn selected idea; owner sửa location cụ thể sẽ clear selected ID và confirm được. Không tự rewrite lịch sử confirmed cũ trong migration.
+- Backend full PostgreSQL suite PASS sau sửa; bổ sung HTTP test409 venue_required PASS, store/HTTP suite + vet/build PASS. Race suite cuối sau review fix cũng PASS, cùng vet/build. Snapshot kind không đổi khi operator sửa loại catalogue sau đó; có regression test.
+- Mobile PlaceExplorer/Discover: activity/kind/area/budget/people filters có validate, cursor pages; budget null ghi chưa xác minh, dự trù có price_note, place có source/check date và Link mở nguồn. Không coi số người gợi ý là số chỗ còn trống.
+- PlanVoting: owner thêm custom venue/catalogue option, member vote/change, tổng phiếu/my_vote, khóa khi không inviting/future. Chỉplace có CTA chọn nơi gặp; idea cần venue cụ thể sau. Selection giữ snapshot version tới khi user explicit reselect sau409; chọn nơi gặp không tự confirm. Parent/child refetch theo version; nested options denial xóa private plan.
+-24 mobile unit tests PASS, TypeScript/ESLint PASS; full18 browser tests PASS (gồm4 mới: owner vote/add/select conflict/confirm lock, member role+denial, discovery filters/unknown prices, catalogue idea->proposal). Review phát hiện P2 guard chặn unrelated edit của legacy confirmed idea. Đã thêm test RED, giới hạn guard vào plan.confirm; edits không liên quan giữ lịch sử cũ. Backend race/vet/build cuối PASS; mobile export Android/iOS/web cuối PASS. Task5/full startup chưa hoàn tất.
+
 ## Mobile plan participants/invites đang hoàn thiện — 2026-11-02
 
 - Base66ad7b0, chưa commit: xem profile/RSVP người tham gia phân trang; owner mời accepted friends qua danh sách phân trang; thu hồi membership có xác nhận và giải thích tombstone/link cũ. Active future mới được mời thêm; revoke membership theo active status như backend.

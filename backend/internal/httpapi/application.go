@@ -179,6 +179,8 @@ func apiError(w http.ResponseWriter, r *http.Request, status int, code string) {
 }
 func apiFailure(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
+	case errors.Is(err, store.ErrVenueRequired):
+		apiError(w, r, 409, "venue_required")
 	case errors.Is(err, store.ErrInviteUnavailable):
 		apiError(w, r, 404, "invite_unavailable")
 	case errors.Is(err, store.ErrInviteKeyChanged):

@@ -55,3 +55,30 @@ func TestVotingAndDiscoveryHTTPFlow(t *testing.T) {
 	call(t, f.handler, "POST", "/v1/plans/"+id+"/confirm", ta, "", "", 200)
 	call(t, f.handler, "PUT", "/v1/plans/"+id+"/vote", ta, `{"option_id":"`+oid+`"}`, "", 409)
 }
+
+func TestIdeaSelectionReturnsVenueRequired(t *testing.T) {
+	f := setupApp(t)
+	actor := ids.New()
+	token := f.token(actor)
+	call(t, f.handler, "GET", "/v1/me", token, "", "", 200)
+	idea := store.Place{ID: ids.New(), Name: "Đi ăn cùng nhau", Kind: "idea", Activity: "food", Area: "TP.HCM", PeopleMin: 1, Active: true}
+	if err := f.db.UpsertPlaces(context.Background(), []store.Place{idea}); err != nil {
+		t.Fatal(err)
+	}
+	p := call(t, f.handler, "POST", "/v1/plans", token, `{"title":"Dinner","activity":"food","starts_at":"`+time.Now().Add(time.Hour).UTC().Format(time.RFC3339)+`"}`, "plan", 201)
+	id := p["id"].(string)
+	option := call(t, f.handler, "POST", "/v1/plans/"+id+"/options", token, `{"place_id":"`+idea.ID+`"}`, "idea", 201)
+	if option["kind"] != "idea" {
+		t.Fatal("missing option classification", option)
+	}
+	current := call(t, f.handler, "GET", "/v1/plans/"+id, token, "", "", 200)
+	r := httptest.NewRequest("PUT", "/v1/plans/"+id+"/selection", strings.NewReader(`{"option_id":"`+option["id"].(string)+`"}`))
+	r.Header.Set("Authorization", "Bearer "+token)
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("If-Match", fmt.Sprintf("\"%.0f\"", current["version"]))
+	w := httptest.NewRecorder()
+	f.handler.ServeHTTP(w, r)
+	if w.Code != 409 || !strings.Contains(w.Body.String(), `"code":"venue_required"`) {
+		t.Fatalf("unexpected selection contract: %d %s", w.Code, w.Body.String())
+	}
+}

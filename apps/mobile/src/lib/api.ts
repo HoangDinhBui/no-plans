@@ -3,6 +3,7 @@ const messages: Record<string, string> = {
   email_unverified: 'Xác minh email trước khi gửi lời mời hoặc tạo kèo nhé.',
   plan_full: 'Kèo đã hết chỗ. Bạn vẫn có thể chọn Chưa chắc hoặc Không đi.',
   plan_closed: 'Kèo không còn nhận thay đổi lúc này.', version_conflict: 'Kèo vừa thay đổi. Tải lại và kiểm tra trước khi lưu.',
+  venue_required: 'Ý tưởng chưa phải nơi gặp. Hãy thêm hoặc nhập một địa điểm cụ thể.',
   invalid_input: 'Kiểm tra lại thông tin đã nhập.', rate_limited: 'Bạn thao tác hơi nhanh. Đợi một chút rồi thử lại nhé.',
   invite_unavailable: 'Link mời hết hạn, hết lượt hoặc đã được thu hồi.',
   network_error: 'Chưa kết nối được. Kiểm tra mạng rồi thử lại.', timeout: 'Kết nối mất nhiều thời gian. Hãy thử lại.',
@@ -67,6 +68,8 @@ export type Friendship = { id: string; low_id: string; high_id: string; requeste
 export type Participant = Profile & { response: RSVP };
 export type InviteLink = { id: string; plan_id: string; expires_at: string; max_uses: number; use_count: number; revoked_at?: string };
 export type IssuedInvite = InviteLink & { token: string };
+export type Place = { id: string; name: string; activity: string; kind: 'place' | 'idea'; area: string; address: string; description: string; budget_min: number | null; budget_max: number | null; price_note: string; people_min: number; people_max: number; source_url: string; source_checked_at?: string; active: boolean };
+export type PlaceOption = { id: string; plan_id: string; place_id?: string; kind: 'place' | 'idea'; name: string; address: string; vote_count: number; my_vote: boolean };
 export type RSVP = 'going' | 'not_going' | 'maybe' | 'invited';
 export type Plan = { id: string; owner_id: string; title: string; activity: string; starts_at: string; location: string; capacity: number; status: 'inviting' | 'confirmed' | 'cancelled' | 'completed'; version: number; members: Record<string, RSVP>; selected_option_id?: string };
 export type PlanSummary = Plan & { my_response: RSVP; going_count: number; pending_count: number };

@@ -18,12 +18,16 @@ type OptionInput struct {
 	PlaceID string `json:"place_id,omitempty"`
 }
 type PlaceOption struct {
+	Kind    string `json:"kind"`
 	ID      string `json:"id"`
 	PlanID  string `json:"plan_id"`
 	PlaceID string `json:"place_id,omitempty"`
 	Name    string `json:"name"`
 	Address string `json:"address"`
 }
+
+var ErrVenueRequired = errors.New("venue_required")
+
 type OptionView struct {
 	PlaceOption
 	VoteCount int  `json:"vote_count"`
@@ -57,9 +61,9 @@ func (s *Store) AddOption(ctx context.Context, planID, actor, key string, in Opt
 		if !votingOpen(p) {
 			return nil, plans.ErrClosed
 		}
-		name, address := in.Name, in.Address
+		name, address, kind := in.Name, in.Address, "place"
 		if in.PlaceID != "" {
-			if err = tx.QueryRow(ctx, "SELECT name,address FROM places WHERE id=$1 AND active", in.PlaceID).Scan(&name, &address); err != nil {
+			if err = tx.QueryRow(ctx, "SELECT name,address,kind FROM places WHERE id=$1 AND active", in.PlaceID).Scan(&name, &address, &kind); err != nil {
 				if errors.Is(err, pgx.ErrNoRows) {
 					return nil, plans.ErrInvalid
 				}
@@ -79,8 +83,8 @@ func (s *Store) AddOption(ctx context.Context, planID, actor, key string, in Opt
 		if !votingOpen(p) {
 			return nil, plans.ErrClosed
 		}
-		option := PlaceOption{ID: ids.New(), PlanID: planID, PlaceID: in.PlaceID, Name: name, Address: address}
-		if _, err = tx.Exec(ctx, "INSERT INTO place_options(id,plan_id,created_by,place_id,name,address) VALUES($1,$2,$3,NULLIF($4,'')::uuid,$5,$6)", option.ID, planID, actor, in.PlaceID, name, address); err != nil {
+		option := PlaceOption{ID: ids.New(), PlanID: planID, PlaceID: in.PlaceID, Name: name, Address: address, Kind: kind}
+		if _, err = tx.Exec(ctx, "INSERT INTO place_options(id,plan_id,created_by,place_id,name,address,kind) VALUES($1,$2,$3,NULLIF($4,'')::uuid,$5,$6,$7)", option.ID, planID, actor, in.PlaceID, name, address, kind); err != nil {
 			return nil, err
 		}
 		p.Version++
@@ -164,12 +168,15 @@ func (s *Store) SelectOption(ctx context.Context, planID, actor string, version 
 	if p.Version != version {
 		return plans.ErrConflict
 	}
-	var name, address string
-	if err = tx.QueryRow(ctx, "SELECT name,address FROM place_options WHERE plan_id=$1 AND id=$2", planID, optionID).Scan(&name, &address); err != nil {
+	var name, address, kind string
+	if err = tx.QueryRow(ctx, "SELECT name,address,kind FROM place_options WHERE plan_id=$1 AND id=$2", planID, optionID).Scan(&name, &address, &kind); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return plans.ErrInvalid
 		}
 		return err
+	}
+	if kind == "idea" {
+		return ErrVenueRequired
 	}
 	if !votingOpen(p) {
 		return plans.ErrClosed
@@ -196,14 +203,14 @@ func (s *Store) ListOptions(ctx context.Context, planID, actor, cursor string, l
 	if _, err = load(ctx, tx, planID, actor, false); err != nil {
 		return page, err
 	}
-	rows, err := tx.Query(ctx, `SELECT o.id::text,o.plan_id::text,COALESCE(o.place_id::text,''),o.name,o.address,(SELECT count(*) FROM votes v WHERE v.plan_id=o.plan_id AND v.option_id=o.id),EXISTS(SELECT 1 FROM votes v WHERE v.plan_id=o.plan_id AND v.option_id=o.id AND v.user_id=$2) FROM place_options o WHERE o.plan_id=$1 AND ($3='' OR o.id>NULLIF($3,'')::uuid) ORDER BY o.id LIMIT $4`, planID, actor, strings.ToLower(cursor), limit+1)
+	rows, err := tx.Query(ctx, `SELECT o.id::text,o.plan_id::text,COALESCE(o.place_id::text,''),o.name,o.address,o.kind,(SELECT count(*) FROM votes v WHERE v.plan_id=o.plan_id AND v.option_id=o.id),EXISTS(SELECT 1 FROM votes v WHERE v.plan_id=o.plan_id AND v.option_id=o.id AND v.user_id=$2) FROM place_options o WHERE o.plan_id=$1 AND ($3='' OR o.id>NULLIF($3,'')::uuid) ORDER BY o.id LIMIT $4`, planID, actor, strings.ToLower(cursor), limit+1)
 	if err != nil {
 		return page, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var option OptionView
-		if err = rows.Scan(&option.ID, &option.PlanID, &option.PlaceID, &option.Name, &option.Address, &option.VoteCount, &option.MyVote); err != nil {
+		if err = rows.Scan(&option.ID, &option.PlanID, &option.PlaceID, &option.Name, &option.Address, &option.Kind, &option.VoteCount, &option.MyVote); err != nil {
 			return page, err
 		}
 		page.Items = append(page.Items, option)
