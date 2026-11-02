@@ -69,3 +69,9 @@ Yêu cầu Node>=22.12. Trong `apps/invite`, chạy `npm ci`, sao chép `.env.ex
 Link có dạng `http://localhost:5173/#token=TOKEN`; frontend bỏ fragment khỏi thanh địa chỉ, gửi token qua header và chỉ lưu tạm trong sessionStorage cho đến khi redeem thành công. Guest chỉ thấy tên, loại hoạt động và thời gian; địa điểm cần membership. Khi deploy, cấu hình reverse proxy `/v1` hoặc VITE_API_URL và exact CORS origin tương ứng, HTTPS và Referrer-Policy no-referrer.
 
 Kiểm tra: `npm test`, `npm run build`; cài browser riêng bằng `npx playwright install chromium`, rồi `npm run test:e2e`. Browser suite dùng controlled HTTP fixtures cho Supabase/API; backend có integration tests riêng với PostgreSQL.
+
+## Expo mobile (đang triển khai)
+
+`apps/mobile` dùng Expo SDK58, React Native0.88 và Node>=24.3. Chạy `npm ci`, sao chép `.env.example` thành `.env.local` và điền API URL/Supabase public config, rồi `npm start`. Thiết bị thật cần API URL là IP LAN/HTTPS có thể truy cập từ thiết bị; localhost trên điện thoại không trỏ đến máy backend. Native không dùng CORS, bản web cần thêm exact origin vào backend CORS_ORIGINS.
+
+Hiện có auth, danh sách kèo, tạo kèo, RSVP, hồ sơ và danh sách/tạo nhóm. Chưa hoàn tất các luồng quản lý/voting/discovery/deep links và chưa kiểm thử thiết bị. Icons còn là template Expo. Các lệnh kiểm tra: `npm test`, `npm run typecheck`, `npm run lint`, `npm run export`. Export bundle không thay thế native build, kiểm thử UI hay beta verification.

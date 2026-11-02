@@ -87,6 +87,17 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Quy ước lưu tiến độ
 
+## Mobile đang triển khai — 2026-11-02
+
+- Checkpoint invite/voting/web đã commit88164f3. Working tree hiện có apps/mobile mới, task5 chưa hoàn tất.
+- Tạo từ create-expo-app blank TypeScript chính thức; manifest thực tế Expo58.0.22/React Native0.88.1/React19.3.0 (CLI có in57 ở thông báo template nhưng file sinh ra là58; lấy manifest làm chuẩn). Đọc AGENTS.md sinh bởi template và docs SDK58; dùng Expo Router trong src/app.
+- Đã có SessionProvider Supabase email/password signup/login, restore, AppState refresh; AsyncStorage theo quickstart chính thức. APIClient lấy token hiện tại, timeout/cancel, lỗi an toàn, version/idempotency headers và generation invalidation để bỏ response phiên cũ.
+- UI khởi đầu theo palette cream/green/lime, light/dark hệ thống, font tiếng Việt, safe area/keyboard, control48px và accessibility labels. Có list/filter/pagination kèo, profile sửa tên/logout, create/list nhóm, create plan và detail RSVP với foreground refresh/polling. Chưa kiểm chứng giao diện mobile qua thiết bị hoặc browser rendering.
+-7 pure TypeScript tests PASS cho transport/session invalidation/idempotency và calendar validation giờ Việt Nam. Đã xem RED trước implementation. Lần kiểm tra cuối trên source cố định sau audit fix:7 tests PASS, TypeScript PASS, ESLint PASS, Expo dependency check up-to-date và export Android/iOS/web PASS.
+- Dependencies cài qua Expo installer; npm shim của máy vẫn chạy Node20 trong child install dù PATH cóNode24. Các lệnh check/export dùng bundledNode24 trực tiếp. Engine mobile yêu cầuNode>=24.3.
+- Sau cài lint, audit báo24 moderate, không còn high. `npm audit fix --ignore-scripts` cập nhật dependencies tương thích, vẫn24 moderate trong chuỗi Expo glob/minimatch và lint tooling; npm đề xuất force hạ Expo51, không áp dụng. Cần theo dõi upstream trước beta.
+- Việc còn thiếu mobile: draft/idempotency qua điều hướng/restart; picker ngày giờ native; nhóm/thành viên/bạn bè; voting/discovery; owner edit/confirm/cancel/share/revoke; deep links; settings/block/report; pagination chọn nhóm đầy đủ; auth/errors/races và giao diện qua browser/device tests. Cần regression cho403 trong mutation phải xóa private content ngay, race giữa refetch và mutation; hiện query xóa data khi GET lỗi nhưng chưa có test UI. Icons còn template Expo. Chưa đánh dấu mobile hoàn tất. Worker/safety/CI/beta vẫn còn toàn bộ theo plan.
+
 ## Tiến độ invite/voting/catalogue và web — 2026-11-02
 
 - Đang có thay đổi chưa commit trên nhánh feature: migration004 invite hash/expiry/revoke/redeem, migration005 catalogue/options/votes, API tương ứng và lệnh seed. Invite secret chỉ lưu hash trong DB; replay idempotency không lưu bearer token. Có test tranh chấp lượt cuối, tombstone người bị thu hồi, quyền owner và snapshot catalogue.
