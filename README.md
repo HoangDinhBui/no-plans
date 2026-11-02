@@ -78,4 +78,6 @@ Hiện có auth, danh sách kèo, tạo kèo, RSVP, hồ sơ và danh sách/tạ
 
 Chủ kèo có thể sửa thông tin với If-Match, chốt, hủy hoặc kết thúc sau giờ hẹn. Xung đột version giữ nguyên bản sửa; người dùng chủ động bỏ bản sửa và tải snapshot mới để kiểm tra. Lỗi kết nối khi refresh giữ form hiện tại, còn lỗi quyền truy cập xóa chi tiết riêng tư.
 
+Mobile có Bạn bè và chi tiết nhóm: gửi mã kết bạn, chấp nhận lời mời nhận được, owner thêm bạn đã kết nối, xóa thành viên và chuyển quyền; member có thể rời nhóm. Các thao tác xóa/chuyển/rời có xác nhận. Người rời nhóm vẫn giữ quyền kèo cũ; owner phải chuyển quyền trước khi rời. Luồng được kiểm tra trên Expo web với HTTP fixtures, còn cần kiểm chứng qua provider/backend thực và thiết bị native.
+
 Form tạo kèo lưu nháp theo tài khoản trên thiết bị, giữ khóa retry qua reload và chỉ gửi sau khi lưu được khóa. Lần gửi không rõ kết quả quá23 giờ yêu cầu kiểm tra danh sách trước khi bỏ nháp để tránh gửi lại ngoài cửa sổ replay của server. Nháp chứa nội dung bạn nhập, không chứa JWT. `npm run test:e2e` kiểm tra Expo web với HTTP fixtures bằng Chromium riêng (`npx playwright install chromium`); chưa thay thế luồng native/Go/Supabase cloud thực.

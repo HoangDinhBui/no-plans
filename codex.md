@@ -87,6 +87,15 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Quy ước lưu tiến độ
 
+## Mobile friends/group membership đang hoàn thiện — 2026-11-02
+
+- Base0fb811d. Đang có thay đổi chưa commit: friends screen gửi friend code, chấp nhận incoming pending, danh sách pending/accepted phân trang; key giữ khi retry lỗi mạng, không cho tự gửi cho mình. Mã của mình có text selection ở Friends/Profile để chia sẻ thủ công.
+- Group detail hiển thị profile thành viên, owner thêm accepted friends qua danh sách phân trang, xóa/chuyển quyền có xác nhận; ordinary member rời nhóm có xác nhận. Owner phải chuyển quyền trước khi thấy nút rời. Không gọi xóa membership kèo khi rời/xóa nhóm; UI giải thích lịch sử giữ nguyên.
+- Route navigation từ list nhóm vào detail và từ home vào Friends đã nối. Thêm group detail/friend types theo API backend thực.
+-Lần kiểm tra cuối:19 unit tests, TypeScript/ESLint, toàn bộ11 browser tests và export Android/iOS/web đều PASS. Trong đó4 browser tests cho social. Browser qua Expo UI/Auth SDK với controlled HTTP fixtures; chưa là native device hoặc Go/Supabase cloud xuyên suốt.
+- Reviewer không tìm lỗi material đã chứng minh; có conditional concern về route params reuse và state/lifecycle chung. Đã scope GroupScreen bằng React key theo group ID để confirmation/pending effects không đi sang group khác.
+- Tự kiểm tra thêm stale ownership: browser test RED cho dialog chuyển quyền còn hiện sau refetch cho thấy đã đổi owner. Đã kiểm tra lại quyền và membership đích khi render confirmation; regression GREEN và full suite/export sau sửa PASS. Task5/mobile/full startup vẫn active.
+
 ## Mobile owner actions đang hoàn thiện — 2026-11-02
 
 - Base909493c, hiện có thay đổi chưa commit: OwnerPlan UI cho sửa tên/ngày/giờ/địa điểm/capacity, confirm, cancel và complete. Hủy/kết thúc có xác nhận; các action theo owner/status/thời gian thực; member không thấy controls chủ kèo.

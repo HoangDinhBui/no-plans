@@ -62,6 +62,8 @@ export class CreationIntent {
 export type Page<T> = { items: T[]; next_cursor?: string };
 export type Profile = { id: string; display_name: string; avatar_url?: string };
 export type Group = { id: string; name: string; owner_id: string };
+export type GroupDetail = Group & { members: Profile[] };
+export type Friendship = { id: string; low_id: string; high_id: string; requester_id: string; status: 'pending' | 'accepted'; peer: Profile };
 export type RSVP = 'going' | 'not_going' | 'maybe' | 'invited';
 export type Plan = { id: string; owner_id: string; title: string; activity: string; starts_at: string; location: string; capacity: number; status: 'inviting' | 'confirmed' | 'cancelled' | 'completed'; version: number; members: Record<string, RSVP>; selected_option_id?: string };
 export type PlanSummary = Plan & { my_response: RSVP; going_count: number; pending_count: number };
