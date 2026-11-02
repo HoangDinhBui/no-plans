@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/url"
 	"strings"
@@ -13,6 +14,7 @@ type Config struct {
 	AuthAudience string
 	AuthAPIKey   string
 	CORSOrigins  []string
+	InviteSecret []byte
 	Environment  string
 }
 
@@ -20,6 +22,13 @@ type Config struct {
 func Load(getenv func(string) string) (Config, error) {
 	c := Config{HTTPAddr: getenv("HTTP_ADDR"), DatabaseURL: getenv("DATABASE_URL"), AuthIssuer: getenv("AUTH_ISSUER"), AuthAudience: getenv("AUTH_AUDIENCE"), Environment: getenv("APP_ENV")}
 	c.AuthAPIKey = getenv("AUTH_API_KEY")
+	if raw := strings.TrimSpace(getenv("INVITE_TOKEN_SECRET")); raw != "" {
+		secret, decodeErr := base64.StdEncoding.DecodeString(raw)
+		if decodeErr != nil || len(secret) != 32 {
+			return Config{}, fmt.Errorf("INVITE_TOKEN_SECRET must be base64 of 32 random bytes")
+		}
+		c.InviteSecret = secret
+	}
 	if c.HTTPAddr == "" {
 		c.HTTPAddr = ":8080"
 	}
@@ -43,6 +52,9 @@ func Load(getenv func(string) string) (Config, error) {
 		return Config{}, fmt.Errorf("AUTH_ISSUER must be an HTTP(S) issuer URL")
 	}
 	if c.Environment == "production" {
+		if len(c.InviteSecret) != 32 {
+			return Config{}, fmt.Errorf("production INVITE_TOKEN_SECRET is required")
+		}
 		if strings.TrimSpace(c.AuthAPIKey) == "" {
 			return Config{}, fmt.Errorf("production AUTH_API_KEY is required")
 		}

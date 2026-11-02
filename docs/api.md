@@ -1,6 +1,6 @@
 # NO PLANS — API hiện có
 
-Backend Go, prefix `/v1`, JSON. Tất cả routes `/v1` hiện tại yêu cầu `Authorization: Bearer <Supabase access token>`; probes `/healthz`, `/readyz` public. Actor lấy từ JWT đã kiểm tra chữ ký, issuer, audience, expiry, role và subject UUID. Không có đường đăng nhập giả hay header tự chọn user.
+Backend Go, prefix `/v1`, JSON. Routes `/v1` yêu cầu `Authorization: Bearer <Supabase access token>`, ngoại trừ `/v1/invite-preview` public; probes `/healthz`, `/readyz` public. Actor lấy từ JWT đã kiểm tra chữ ký, issuer, audience, expiry, role và subject UUID. Không có đường đăng nhập giả hay header tự chọn user.
 
 ## Xác thực và cấu hình
 
@@ -76,3 +76,27 @@ Web chỉ được gọi từ exact origin trong `CORS_ORIGINS`, ví dụ `http:
 ## Chưa có ở mốc này
 
 Token invite links/deep link, voting/discovery, push worker, reports, account deletion và mobile/web UI đang được triển khai theo kế hoạch. Outbox đã lưu sự kiện nhưng chưa gửi push thật. Kiểm thử hiện dùng Supabase-compatible HTTP fixture và JWT ký thật; chưa chứng minh kết nối tài khoản Supabase cloud hay thiết bị thật.
+## Invite links, voting và catalogue
+
+Các endpoint dưới đây dùng JWT như core API, trừ preview public. Token lời mời chỉ gửi trong header `X-Invite-Token`, không đặt vào URL API hoặc query string.
+
+| Endpoint | Quyền và đầu vào | Kết quả |
+|---|---|---|
+| POST /v1/plans/{id}/invite-links | Owner, verified email, Idempotency-Key; JSON max_uses (mặc định100,1..1000) |201 metadata và token; hết hạn7 ngày |
+| GET /v1/plans/{id}/invite-links | Owner; cursor/limit | Metadata, không trả bearer token |
+| DELETE /v1/invite-links/{id} | Owner | Thu hồi link |
+| GET /v1/invite-preview | Public; X-Invite-Token | Chỉ title,activity,starts_at |
+| POST /v1/invite-redeem | JWT; X-Invite-Token | plan_id; membership invited |
+| GET /v1/plans/{id}/options | Member; cursor/limit | Snapshot options, vote_count,my_vote |
+| POST /v1/plans/{id}/options | Owner; Idempotency-Key | JSON place_id hoặc name,address; tối đa20 options |
+| PUT /v1/plans/{id}/vote | Member; JSON option_id | changed; một lựa chọn/người, có thể đổi |
+| PUT /v1/plans/{id}/selection | Owner; If-Match version; JSON option_id | Plan và ETag mới, location từ snapshot |
+| GET /v1/places | JWT; activity,kind,area,max_budget,people,cursor,limit | Catalogue page |
+
+Preview thiếu/sai/hết hạn/hết lượt/thu hồi trả404 invite_unavailable. Thành viên hiện có có thể redeem lại link hết lượt mà không tiêu thêm lượt; link bị thu hồi/hết hạn vẫn bị từ chối. Người bị owner thu hồi membership không được dùng link để tự vào lại; owner có thể mời trực tiếp lại. Redeem và thu hồi khóa plan trước link để giữ thứ tự transaction nhất quán.
+
+Preview public giới hạn120 request/phút theo direct peer IP trong process (không tin X-Forwarded-For); triển khai nhiều instance cần edge rate limiting theo client thực. Các endpoint authenticated vẫn dùng shared actor quota. Không log Authorization/X-Invite-Token hoặc response tạo link.
+
+Voting chỉ mở khi plan inviting và chưa bắt đầu. Chốt/hủy/bắt đầu khóa thay đổi; edit location thủ công xóa selected_option_id. Mỗi option chụp tên/địa chỉ tại lúc thêm; đổi catalogue không thay location đã chọn. Ý tưởng hoạt động không có địa chỉ thực: owner cần bổ sung địa điểm cụ thể trước buổi hẹn.
+
+Catalogue kind=place có source_url HTTPS và checked_at; kind=idea là đề xuất nội dung. Budget null có nghĩa chưa xác minh, bị loại khi có filter max_budget. people là khoảng số người gợi ý, không phải thông tin chỗ trống thời gian thực. Không có endpoint admin catalogue public; dùng cmd/seed với operator role. INVITE_TOKEN_SECRET cần base64 của32 byte; chưa cấu hình trả503 khi tạo link, production từ chối khởi động nếu thiếu.

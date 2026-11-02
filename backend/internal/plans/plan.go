@@ -18,17 +18,18 @@ var (
 )
 
 type Plan struct {
-	ID       string            `json:"id"`
-	OwnerID  string            `json:"owner_id"`
-	GroupID  string            `json:"group_id,omitempty"`
-	Title    string            `json:"title"`
-	Activity string            `json:"activity"`
-	StartsAt time.Time         `json:"starts_at"`
-	Capacity int               `json:"capacity"` // Zero means unlimited.
-	Status   string            `json:"status"`
-	Location string            `json:"location"`
-	Version  int64             `json:"version"`
-	Members  map[string]string `json:"members"`
+	ID               string            `json:"id"`
+	OwnerID          string            `json:"owner_id"`
+	GroupID          string            `json:"group_id,omitempty"`
+	SelectedOptionID string            `json:"selected_option_id,omitempty"`
+	Title            string            `json:"title"`
+	Activity         string            `json:"activity"`
+	StartsAt         time.Time         `json:"starts_at"`
+	Capacity         int               `json:"capacity"` // Zero means unlimited.
+	Status           string            `json:"status"`
+	Location         string            `json:"location"`
+	Version          int64             `json:"version"`
+	Members          map[string]string `json:"members"`
 }
 
 func New(id, owner, title, activity string, startsAt time.Time, capacity int, now time.Time) (*Plan, error) {
@@ -130,6 +131,9 @@ func (p *Plan) Edit(actorID string, expectedVersion int64, title string, startsA
 		return ErrInvalid
 	}
 	p.Title = title
+	if p.Location != location {
+		p.SelectedOptionID = ""
+	}
 	p.StartsAt = startsAt.UTC()
 	p.Capacity = capacity
 	p.Location = location

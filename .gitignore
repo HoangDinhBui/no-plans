@@ -11,3 +11,6 @@ backend/bin/
 .superpowers/
 .worktrees/
 .local/
+test-results/
+playwright-report/
+*.tsbuildinfo

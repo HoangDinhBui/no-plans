@@ -38,7 +38,7 @@ func run() error {
 	defer db.Close()
 	verifier := auth.NewVerifier(cfg.AuthIssuer, cfg.AuthAudience, nil)
 	email := auth.NewEmailGate(cfg.AuthIssuer, cfg.AuthAPIKey, nil)
-	srv := &http.Server{Addr: cfg.HTTPAddr, Handler: httpapi.NewApplication(db, verifier, email, cfg.CORSOrigins...), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 20 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
+	srv := &http.Server{Addr: cfg.HTTPAddr, Handler: httpapi.NewApplicationWithOptions(db, verifier, email, httpapi.Options{Origins: cfg.CORSOrigins, InviteSecret: cfg.InviteSecret}), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 20 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20}
 	result := make(chan error, 1)
 	go func() { slog.Info("api listening", "addr", cfg.HTTPAddr); result <- srv.ListenAndServe() }()
 	select {

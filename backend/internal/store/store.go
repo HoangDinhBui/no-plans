@@ -123,12 +123,12 @@ func (s *Store) GetPlan(ctx context.Context, id, actor string) (*plans.Plan, err
 }
 
 func load(ctx context.Context, tx pgx.Tx, id, actor string, lock bool) (*plans.Plan, error) {
-	query := `SELECT id::text,owner_id::text,title,activity,starts_at,capacity,status,location,version,COALESCE(group_id::text,'') FROM plans WHERE id=$1 AND EXISTS(SELECT 1 FROM plan_members WHERE plan_id=plans.id AND user_id=$2)`
+	query := `SELECT id::text,owner_id::text,title,activity,starts_at,capacity,status,location,version,COALESCE(group_id::text,''),COALESCE(selected_option_id::text,'') FROM plans WHERE id=$1 AND EXISTS(SELECT 1 FROM plan_members WHERE plan_id=plans.id AND user_id=$2)`
 	if lock {
 		query += " FOR UPDATE"
 	}
 	p := &plans.Plan{Members: map[string]string{}}
-	err := tx.QueryRow(ctx, query, id, actor).Scan(&p.ID, &p.OwnerID, &p.Title, &p.Activity, &p.StartsAt, &p.Capacity, &p.Status, &p.Location, &p.Version, &p.GroupID)
+	err := tx.QueryRow(ctx, query, id, actor).Scan(&p.ID, &p.OwnerID, &p.Title, &p.Activity, &p.StartsAt, &p.Capacity, &p.Status, &p.Location, &p.Version, &p.GroupID, &p.SelectedOptionID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, plans.ErrForbidden
 	}

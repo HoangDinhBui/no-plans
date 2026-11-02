@@ -10,6 +10,7 @@ import (
 	"mime"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/HoangDinhBui/no-plans/backend/internal/auth"
 	"github.com/HoangDinhBui/no-plans/backend/internal/ids"
@@ -18,15 +19,26 @@ import (
 )
 
 type application struct {
-	db       *store.Store
-	verifier *auth.Verifier
-	email    *auth.EmailGate
+	db             *store.Store
+	verifier       *auth.Verifier
+	email          *auth.EmailGate
+	inviteSecret   []byte
+	previewLimiter *publicLimiter
 }
 type identity struct{ actor, token string }
 type identityKey struct{}
 
 func NewApplication(db *store.Store, verifier *auth.Verifier, email *auth.EmailGate, origins ...string) http.Handler {
-	a := &application{db: db, verifier: verifier, email: email}
+	return NewApplicationWithOptions(db, verifier, email, Options{Origins: origins})
+}
+
+type Options struct {
+	Origins      []string
+	InviteSecret []byte
+}
+
+func NewApplicationWithOptions(db *store.Store, verifier *auth.Verifier, email *auth.EmailGate, options Options) http.Handler {
+	a := &application{db: db, verifier: verifier, email: email, inviteSecret: append([]byte(nil), options.InviteSecret...), previewLimiter: newPublicLimiter(120, time.Minute, 4096)}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/me", a.me)
 	mux.HandleFunc("/v1/blocks", a.blocks)
@@ -41,12 +53,19 @@ func NewApplication(db *store.Store, verifier *auth.Verifier, email *auth.EmailG
 	mux.HandleFunc("/v1/plans/{planID}", a.plan)
 	mux.HandleFunc("/v1/plans/{planID}/rsvp", a.rsvp)
 	mux.HandleFunc("/v1/plans/{planID}/members", a.planMembers)
+	mux.HandleFunc("/v1/plans/{planID}/options", a.options)
+	mux.HandleFunc("/v1/plans/{planID}/vote", a.vote)
+	mux.HandleFunc("/v1/plans/{planID}/selection", a.selection)
+	mux.HandleFunc("/v1/places", a.places)
+	mux.HandleFunc("/v1/plans/{planID}/invite-links", a.inviteLinks)
+	mux.HandleFunc("/v1/invite-links/{linkID}", a.revokeInviteLink)
+	mux.HandleFunc("/v1/invite-redeem", a.redeemInvite)
 	mux.HandleFunc("/v1/plans/{planID}/invitations", a.invite)
 	mux.HandleFunc("/v1/plans/{planID}/invitations/{userID}", a.revoke)
 	mux.HandleFunc("/v1/plans/{planID}/{action}", a.transition)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { apiError(w, r, 404, "not_found") })
 	return withHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !cors(w, r, origins) {
+		if !cors(w, r, options.Origins) {
 			return
 		}
 		if !strings.HasPrefix(r.URL.Path, "/v1/") && r.URL.Path != "/v1" {
@@ -57,7 +76,19 @@ func NewApplication(db *store.Store, verifier *auth.Verifier, email *auth.EmailG
 			serveProbe(w, r, ready, w.Header().Get("X-Request-ID"))
 			return
 		}
-		if db == nil || verifier == nil {
+		if db == nil {
+			apiError(w, r, 503, "unavailable")
+			return
+		}
+		if r.URL.Path == "/v1/invite-preview" {
+			if !a.previewLimiter.allow(r.RemoteAddr, time.Now()) {
+				apiFailure(w, r, store.ErrRateLimited)
+				return
+			}
+			a.previewInvite(w, r)
+			return
+		}
+		if verifier == nil {
 			apiError(w, r, 503, "unavailable")
 			return
 		}
@@ -148,6 +179,12 @@ func apiError(w http.ResponseWriter, r *http.Request, status int, code string) {
 }
 func apiFailure(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
+	case errors.Is(err, store.ErrInviteUnavailable):
+		apiError(w, r, 404, "invite_unavailable")
+	case errors.Is(err, store.ErrInviteKeyChanged):
+		apiError(w, r, 409, "invite_key_changed")
+	case errors.Is(err, store.ErrInviteNotConfigured):
+		apiError(w, r, 503, "invite_not_configured")
 	case errors.Is(err, store.ErrRateLimited):
 		w.Header().Set("Retry-After", "60")
 		apiError(w, r, 429, "rate_limited")

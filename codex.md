@@ -87,6 +87,18 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Quy ước lưu tiến độ
 
+## Tiến độ invite/voting/catalogue và web — 2026-11-02
+
+- Đang có thay đổi chưa commit trên nhánh feature: migration004 invite hash/expiry/revoke/redeem, migration005 catalogue/options/votes, API tương ứng và lệnh seed. Invite secret chỉ lưu hash trong DB; replay idempotency không lưu bearer token. Có test tranh chấp lượt cuối, tombstone người bị thu hồi, quyền owner và snapshot catalogue.
+- Catalogue ban đầu gồm3 địa điểm có nguồn chính thức và7 ý tưởng hoạt động; giá địa điểm chưa xác minh để null, chi phí ý tưởng là ước lượng được ghi rõ. Chưa thay thế dữ liệu địa điểm thương mại thực tế cho beta.
+- Web React tại apps/invite dùng Supabase SDK và API: preview riêng tư, đăng nhập/đăng ký, redeem, RSVP, phục hồi phiên, light/dark và responsive. Đã áp dụng bộ UX/UI skills do người dùng yêu cầu.
+- Đã sửa native fetch sai receiver gây lỗi trước khi gửi request; nhận lời mời mới ngay trong cùng tab; cho thành viên mở lại link hết lượt; xóa chi tiết riêng tư khi nhận403 hoặc SDK báo signed-out.
+- Kiểm chứng bản web:11 unit tests PASS, gồm2 regression response RSVP chậm sau signed-out/403; TypeScript và Vite production build PASS;12 Playwright tests PASS trên desktop/mobile/dark, gồm axe AA tự động, keyboard, login/redeem/RSVP/reload, hết lượt và revoked membership. Đã xem ảnh mobile. Browser tests dùng HTTP fixtures cho auth/API, chưa chứng minh luồng Supabase cloud + Go chạy xuyên suốt. Lần kiểm tra cuối sau chỉnh busy-state:11 unit tests, production build và12 browser tests đều PASS.
+- Node24 bundled được dùng cho kiểm thử/build vì npm shim hệ thống chạy Node20. Yêu cầu project Node>=22.12.
+- Cluster PostgreSQL riêng đã được pg_ctl xác nhận dừng rồi khởi động lại tại127.0.0.1:55432. Full backend `go test ./... -count=1`, `go test -race ./... -count=1`, `go vet ./...`, `go build ./...` đều PASS với TEST_DATABASE_URL.
+- Review backend invite/voting không tìm vấn đề material. Review frontend phát hiện delayed RSVP response có thể khôi phục private content sau403/signout: đã tái hiện FAIL, sửa bằng generation guard cho private requests, regression PASS; reviewer đã xác nhận bản sửa bằng inspection.
+- Đã cập nhật docs/api.md và README về API mới, seed, secret, web local và giới hạn kiểm thử. Cần checkpoint commit; tiếp tục Expo mobile, push worker, safety/retention, CI/Postgres17, kiểm thử thiết bị và beta. Mục tiêu đầy đủ vẫn active.
+
 Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết quả kiểm tra thực tế, quyết định mới, giới hạn và bước tiếp theo. Không lưu secrets, access token hoặc thông tin xác thực.
 
 ## Quyết định thực thi

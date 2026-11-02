@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -101,7 +102,7 @@ func setupApp(t *testing.T) appFixture {
 		}
 		return raw
 	}
-	return appFixture{handler: NewApplication(db, auth.NewVerifier(issuer, "authenticated", provider.Client()), auth.NewEmailGate(issuer, "test-key", provider.Client()), "https://app.no-plans.test"), token: token, unverified: unverified, db: db}
+	return appFixture{handler: NewApplicationWithOptions(db, auth.NewVerifier(issuer, "authenticated", provider.Client()), auth.NewEmailGate(issuer, "test-key", provider.Client()), Options{Origins: []string{"https://app.no-plans.test"}, InviteSecret: bytes.Repeat([]byte{7}, 32)}), token: token, unverified: unverified, db: db}
 }
 
 func call(t *testing.T, h http.Handler, method, path, token, body, key string, want int) map[string]any {

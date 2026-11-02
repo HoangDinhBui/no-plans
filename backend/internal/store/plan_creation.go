@@ -153,6 +153,9 @@ func (s *Store) InvitePlanMember(ctx context.Context, id, actor, target string) 
 	if _, err = tx.Exec(ctx, "INSERT INTO plan_members(plan_id,user_id,response) VALUES($1,$2,'invited')", id, target); err != nil {
 		return err
 	}
+	if _, err = tx.Exec(ctx, "DELETE FROM plan_member_revocations WHERE plan_id=$1 AND user_id=$2", id, target); err != nil {
+		return err
+	}
 	p.Version++
 	if _, err = tx.Exec(ctx, "UPDATE plans SET version=$2 WHERE id=$1", id, p.Version); err != nil {
 		return err
@@ -192,6 +195,9 @@ func (s *Store) RevokePlanMember(ctx context.Context, id, actor, target string) 
 	}
 	if tag.RowsAffected() == 0 {
 		return nil
+	}
+	if _, err = tx.Exec(ctx, "INSERT INTO plan_member_revocations(plan_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING", id, target); err != nil {
+		return err
 	}
 	p.Version++
 	if _, err = tx.Exec(ctx, "UPDATE plans SET version=$2 WHERE id=$1", id, p.Version); err != nil {

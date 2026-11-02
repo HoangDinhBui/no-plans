@@ -3,8 +3,6 @@ package httpapi
 import (
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/HoangDinhBui/no-plans/backend/internal/store"
@@ -56,17 +54,8 @@ func (a *application) plan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == "PATCH" {
-		header := strings.TrimSpace(r.Header.Get("If-Match"))
-		if header == "" {
-			apiError(w, r, 428, "version_required")
-			return
-		}
-		if len(header) >= 2 && header[0] == '"' && header[len(header)-1] == '"' {
-			header = header[1 : len(header)-1]
-		}
-		version, err := strconv.ParseInt(header, 10, 64)
-		if err != nil || version < 1 {
-			apiError(w, r, 400, "invalid_version")
+		version, ok := expectedVersion(w, r)
+		if !ok {
 			return
 		}
 		var body struct {

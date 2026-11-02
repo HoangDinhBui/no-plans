@@ -54,4 +54,18 @@ Không có TEST_DATABASE_URL thì PostgreSQL test bị skip. Auth test tạo HTT
 
 ## Phạm vi chưa hoàn tất
 
-Mobile Expo, web invite/deep link, voting/discovery, worker push, reports/account deletion và các bước beta/device/store vẫn đang trong kế hoạch; chưa sẵn sàng phát hành.
+Mobile Expo, worker push, reports/account deletion và các bước beta/device/store vẫn đang trong kế hoạch; chưa sẵn sàng phát hành. Backend invite links, voting/discovery và web invite đã có implementation và kiểm thử cục bộ; kết nối Supabase cloud thực vẫn cần kiểm chứng.
+
+## Invite links và catalogue
+
+Backend cần `INVITE_TOKEN_SECRET` là base64 của32 byte ngẫu nhiên để tạo link; production bắt buộc cấu hình. Không commit secret. Database chỉ lưu SHA256 token; idempotent replay tái tạo token bằng secret. Đổi secret không vô hiệu link đã phát hành nhưng replay key cũ sẽ nhận409; tạo request với idempotency key mới khi cần link mới.
+
+Sau migration, chạy `go run ./cmd/seed` trong backend với DATABASE_URL để nạp catalogue ban đầu, hoặc thêm `-file path/to/catalogue.json`. Lệnh dùng quyền operator, không có HTTP endpoint sửa catalogue. Catalogue phân biệt địa điểm có nguồn và ý tưởng hoạt động; chi phí ý tưởng là dự trù, giá địa điểm chưa biết để null.
+
+## Web invite local
+
+Yêu cầu Node>=22.12. Trong `apps/invite`, chạy `npm ci`, sao chép `.env.example` thành `.env.local`, điền Supabase URL/publishable key rồi `npm run dev`. Backend chạy cổng8080; Vite proxy `/v1` đến backend. Supabase cần cho phép redirect về origin web. Không đưa secret backend vào biến VITE.
+
+Link có dạng `http://localhost:5173/#token=TOKEN`; frontend bỏ fragment khỏi thanh địa chỉ, gửi token qua header và chỉ lưu tạm trong sessionStorage cho đến khi redeem thành công. Guest chỉ thấy tên, loại hoạt động và thời gian; địa điểm cần membership. Khi deploy, cấu hình reverse proxy `/v1` hoặc VITE_API_URL và exact CORS origin tương ứng, HTTPS và Referrer-Policy no-referrer.
+
+Kiểm tra: `npm test`, `npm run build`; cài browser riêng bằng `npx playwright install chromium`, rồi `npm run test:e2e`. Browser suite dùng controlled HTTP fixtures cho Supabase/API; backend có integration tests riêng với PostgreSQL.
