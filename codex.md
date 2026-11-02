@@ -87,6 +87,15 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Quy ước lưu tiến độ
 
+## Mobile plan participants/invites đang hoàn thiện — 2026-11-02
+
+- Base66ad7b0, chưa commit: xem profile/RSVP người tham gia phân trang; owner mời accepted friends qua danh sách phân trang; thu hồi membership có xác nhận và giải thích tombstone/link cũ. Active future mới được mời thêm; revoke membership theo active status như backend.
+- Owner tạo/list/revoke invite links, max_uses1..1000, metadata hạn/lượt/trạng thái. URL chia sẻ dùng EXPO_PUBLIC_INVITE_WEB_URL + #token; HTTPS ở release, HTTP chỉ dev. Config lỗi được chặn trước POST. Không lưu token link vào AsyncStorage/localStorage; chỉ state màn hình. Danh sách metadata không trả token. Link mới hiện để chọn/copy hoặc mở Share.share; không tuyên bố đã gửi thành công.
+- Retry create cùng form giữ Idempotency-Key. Link revoke có xác nhận, bỏ share control/token đang hiển thị và nói rõ không xóa thành viên đã vào; membership revoke là thao tác riêng.
+- useResource reload/reject callbacks nay stable; revision theo plan.version kích hoạt refresh người tham gia/link metadata sau mutation. GET con403/401/404/410 báo parent reject để xóa toàn bộ private plan.22 pure unit tests PASS; TypeScript/ESLint PASS;11 browser regression cũ PASS sau integration,3 browser tests mới PASS (direct invite/member revoke, link retry/share/revoke, member không lấy link metadata + nested denial clears plan). Lần kiểm tra cuối toàn bộ14 browser tests và export Android/iOS/web PASS.
+- Review độc lập không tìm material findings. Native Share thực chưa kiểm chứng: browser chỉ stub navigator.share, HTTP Auth/API đều controlled fixtures. Cần hosting web invite/public URL và Supabase thật để kiểm chứng xuyên suốt; task5/full startup vẫn active.
+- Tiếp theo voting/discovery: cần phân biệt catalogue idea/place. Backend hiện cho select một idea không có address và dùng name như location; phải xử lý rõ ý tưởng chưa phải nơi gặp cụ thể trước khi hoàn tất luồng chốt địa điểm.
+
 ## Mobile friends/group membership đang hoàn thiện — 2026-11-02
 
 - Base0fb811d. Đang có thay đổi chưa commit: friends screen gửi friend code, chấp nhận incoming pending, danh sách pending/accepted phân trang; key giữ khi retry lỗi mạng, không cho tự gửi cho mình. Mã của mình có text selection ở Friends/Profile để chia sẻ thủ công.

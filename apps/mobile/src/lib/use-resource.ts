@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { APIError } from './api';
 import { useSession } from './session';
-export function useResource<T>(path: string, poll = false) {
+export function useResource<T>(path: string, poll = false, revision?: number) {
   const { api, session } = useSession(); const [retry, setRetry] = useState(0);
   const signature = path + ':' + (session?.access_token ?? '');
   const [state, setState] = useState<{ signature: string; data?: T; error?: Error; loading: boolean }>({ signature: '', loading: true });
@@ -28,7 +28,9 @@ export function useResource<T>(path: string, poll = false) {
     void load();
     const foreground = AppState.addEventListener('change', state => { if (state === 'active') void load(); });
     return () => { alive = false; controller.abort(); if (timer) clearTimeout(timer); foreground.remove(); };
-  }, [api, path, signature, retry, poll]);
+  }, [api, path, signature, retry, poll, revision]);
   const current = state.signature === signature ? state : { loading: true, data: undefined, error: undefined };
-  return { ...current, reload: () => { generation.current++; setRetry(n => n + 1); }, reject: (error: Error) => { generation.current++; setState({ signature, error, loading: false }); } };
+  const reload = useCallback(() => { generation.current++; setRetry(n => n + 1); }, []);
+  const reject = useCallback((error: Error) => { generation.current++; setState({ signature, error, loading: false }); }, [signature]);
+  return { ...current, reload, reject };
 }
