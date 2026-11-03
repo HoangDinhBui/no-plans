@@ -106,7 +106,8 @@ func NewApplicationWithOptions(db *store.Store, verifier *auth.Verifier, email *
 			return
 		}
 		_, err = db.EnsureProfile(r.Context(), p.UserID)
-		retryDeletion := r.Method == http.MethodDelete && r.URL.Path == "/v1/me" && errors.Is(err, plans.ErrForbidden)
+		retryDeletion := r.Method == http.MethodDelete && errors.Is(err, plans.ErrForbidden) &&
+			(r.URL.Path == "/v1/me" || strings.HasPrefix(r.URL.Path, "/v1/devices/"))
 		if err != nil && !retryDeletion {
 			apiFailure(w, r, err)
 			return
