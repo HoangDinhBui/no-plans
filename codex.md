@@ -189,3 +189,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Mobile có lớp gọi PUT/DELETE đăng ký push theo scope của phiên API. Còn nối Expo Notifications, lưu ID cài đặt, và thu hồi trước khi đăng xuất.
 - Mobile: màn Hồ sơ có nút Bật thông báo trên iOS/Android và thu hồi thiết bị trước đăng xuất. Expo Notifications đã có trong lockfile. Node 24: typecheck và 31 unit test đã qua. Còn xử lý chạm thông báo và kiểm thử EAS trên thiết bị.
 - Chạm push mở chi tiết kèo khi UUID hợp lệ và tài khoản hiện tại khớp recipientId. TypeScript đã qua. Cần kiểm thử cold start trên iOS và Android.
+- Push mời kèo: outbox ghi người nhận khi tạo kèo nhóm hoặc mời trực tiếp. Worker lọc lời mời đang chờ phản hồi. Bộ go test ./... -count=1 đã qua với PostgreSQL 15.

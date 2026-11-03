@@ -160,7 +160,7 @@ func (s *Store) InvitePlanMember(ctx context.Context, id, actor, target string) 
 	if _, err = tx.Exec(ctx, "UPDATE plans SET version=$2 WHERE id=$1", id, p.Version); err != nil {
 		return err
 	}
-	if err = event(ctx, tx, id, actor, "plan.invited", p.Version); err != nil {
+	if err = event(ctx, tx, id, actor, "plan.invited", p.Version, target); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)

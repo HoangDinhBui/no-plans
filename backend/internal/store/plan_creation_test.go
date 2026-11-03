@@ -90,6 +90,30 @@ func TestGroupPlanSnapshotsMembershipAndReplaysCreation(t *testing.T) {
 	if err = s.InvitePlanMember(ctx, p.ID, a, c); err != nil {
 		t.Fatal(err)
 	}
+	for _, user := range []string{a, b, c} {
+		if err := s.RegisterDevice(ctx, user, ids.New(), "ios", "ExpoPushToken["+user+"]"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	events, err := s.ClaimOutbox(ctx, 20, 3, time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range events {
+		if _, err := s.ExpandPushEvent(ctx, e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for kind, expected := range map[string]string{"plan.created": b, "plan.invited": c} {
+		var count int
+		var recipient string
+		err := s.db.QueryRow(ctx, `SELECT count(*), coalesce(min(d.recipient_id::text), '')
+			FROM push_deliveries d JOIN outbox e ON e.id=d.event_id
+			WHERE e.plan_id=$1 AND e.kind=$2`, p.ID, kind).Scan(&count, &recipient)
+		if err != nil || count != 1 || recipient != expected {
+			t.Fatalf("%s deliveries: %d, recipient %q, err %v", kind, count, recipient, err)
+		}
+	}
 	if err = s.RevokePlanMember(ctx, p.ID, a, c); err != nil {
 		t.Fatal(err)
 	}

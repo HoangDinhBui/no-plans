@@ -94,12 +94,16 @@ func insertPlan(ctx context.Context, tx pgx.Tx, p *plans.Plan) error {
 	if err != nil {
 		return err
 	}
+	var recipients []string
 	for id, response := range p.Members {
+		if response == "invited" {
+			recipients = append(recipients, id)
+		}
 		if _, err = tx.Exec(ctx, "INSERT INTO plan_members(plan_id,user_id,response) VALUES($1,$2,$3)", p.ID, id, response); err != nil {
 			return err
 		}
 	}
-	if err = event(ctx, tx, p.ID, p.OwnerID, "plan.created", p.Version); err != nil {
+	if err = event(ctx, tx, p.ID, p.OwnerID, "plan.created", p.Version, recipients...); err != nil {
 		return err
 	}
 	return nil
@@ -184,10 +188,10 @@ func (s *Store) Respond(ctx context.Context, id, actor, response string) (bool, 
 	return true, nil
 }
 
-func event(ctx context.Context, tx pgx.Tx, id, actor, kind string, version int64) error {
+func event(ctx context.Context, tx pgx.Tx, id, actor, kind string, version int64, recipients ...string) error {
 	if err := audit(ctx, tx, actor, kind, id); err != nil {
 		return err
 	}
-	_, err := tx.Exec(ctx, `INSERT INTO outbox(plan_id,actor_id,kind,payload) VALUES($1::uuid,$2::uuid,$3,jsonb_build_object('plan_id',($1::uuid)::text,'version',$4::bigint))`, id, actor, kind, version)
+	_, err := tx.Exec(ctx, `INSERT INTO outbox(plan_id,actor_id,kind,payload) VALUES($1::uuid,$2::uuid,$3,jsonb_build_object('plan_id',($1::uuid)::text,'version',$4::bigint,'recipient_ids',$5::text[]))`, id, actor, kind, version, recipients)
 	return err
 }
