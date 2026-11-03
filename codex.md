@@ -199,3 +199,6 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Báo cáo thành viên trong kèo: API xác thực, giới hạn 10/24h, lý do cố định và UI chọn lý do. Test store/HTTP PostgreSQL, TypeScript và ca Playwright báo cáo đã qua.
 - Xóa tài khoản: bắt đầu bằng transaction ẩn danh hồ sơ và thu hồi toàn bộ thiết bị. Đăng ký push khóa hàng user để tuần tự với xóa tài khoản. Còn test, API và xử lý danh tính Supabase.
 - Xóa hồ sơ NO PLANS: màn xác nhận, DELETE /v1/me, ẩn danh và thu hồi push trong transaction. Test PostgreSQL store/HTTP và TypeScript đã qua. Còn xóa danh tính Supabase và retention.
+- Hàng đợi xóa danh tính lưu cùng transaction xóa hồ sơ, backfill hồ sơ đã xóa và có lease một phút để worker thử lại. Còn kết nối Supabase Admin và test vòng đời lease.
+- Worker xử lý xóa danh tính khi có SUPABASE_URL và SUPABASE_SERVICE_ROLE_KEY. Cần xác minh retry khi danh tính đã bị xóa và kiểm thử client giả lập.
+- Worker xóa danh tính Supabase: bộ go test ./... -count=1 đã qua với PostgreSQL 15. Client được kiểm thử với phản hồi giả lập, chưa chạy với Supabase thật.

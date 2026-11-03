@@ -77,5 +77,8 @@ func (s *Store) DeleteAccount(ctx context.Context, actor string) error {
 	if _, err = tx.Exec(ctx, "DELETE FROM devices WHERE user_id=$1", actor); err != nil {
 		return err
 	}
+	if _, err = tx.Exec(ctx, "INSERT INTO identity_deletions(user_id) VALUES($1) ON CONFLICT DO NOTHING", actor); err != nil {
+		return err
+	}
 	return tx.Commit(ctx)
 }
