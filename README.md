@@ -108,3 +108,11 @@ pg_restore --dbname $env:RESTORE_DATABASE_URL --no-owner --no-privileges --exit-
 ```
 
 `RESTORE_DATABASE_URL` trỏ đến database trống dành riêng cho diễn tập. Sau restore, đối chiếu migration và số bản ghi của các bảng chính với bản sao, rồi chạy API trên database khôi phục để kiểm tra `/readyz` và đọc một kèo fixture. Ghi thời điểm backup, thời gian khôi phục và kết quả vào nhật ký vận hành. Chỉ chạy worker với dịch vụ ngoài giả lập trong môi trường diễn tập.
+
+### Xác minh trên staging
+
+- Chuẩn bị PostgreSQL 17, API và worker, một dự án Supabase Auth dành cho staging và hai tài khoản thử nghiệm có email đã xác minh.
+- Liên kết ứng dụng với dự án EAS, cấu hình định danh ứng dụng và thông tin xác thực push cho iOS và Android. Trỏ biến môi trường công khai của mobile và web lời mời về staging.
+- Trên hai thiết bị, tạo kèo, gửi lời mời, mở link khi ứng dụng đang chạy và khi đã đóng, rồi phản hồi và chốt kèo. Xác nhận thông báo đến đúng tài khoản và mở đúng kèo.
+- Đổi giờ, hủy kèo và tắt thông báo nhóm để kiểm tra lượt gửi còn chờ. Dùng tài khoản thử nghiệm riêng để kiểm tra xóa hồ sơ, thu hồi push và hoàn tất xóa danh tính.
+- Ghi phiên bản build, nền tảng, commit, kết quả và các bước tái hiện vào nhật ký kiểm thử.

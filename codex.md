@@ -217,3 +217,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - App CI đã qua cả mobile và invite web tại bdc667a. Beta còn cần thiết bị thật, Supabase staging, restore trên staging và review toàn nhánh.
 - Review toàn nhánh: chống trùng nhắc lịch theo giờ bắt đầu (kể cả bản ghi cũ) và cho phép thử lại DELETE /v1/me sau khi đã xóa. Các ca hồi quy PostgreSQL đã qua.
 - HTTP regression đã qua: phiên đã xóa hồ sơ có thể thu hồi lại thiết bị trước đăng xuất; đọc hồ sơ vẫn bị từ chối.
+- README ghi điều kiện staging và các bước kiểm thử hai thiết bị. Chưa có dự án EAS, thông tin xác thực push hoặc thiết bị staging được xác minh.
