@@ -220,3 +220,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - README ghi điều kiện staging và các bước kiểm thử hai thiết bị. Chưa có dự án EAS, thông tin xác thực push hoặc thiết bị staging được xác minh.
 - README mô tả các luồng MVP đã triển khai và dẫn tới quy trình staging. Backend CI PostgreSQL 17 đã qua tại 1491752.
 - API ghi log có cấu trúc với request_id, status và duration_ms. Bộ httpapi đã qua với PostgreSQL cục bộ. Dashboard và đo tải staging còn mở.
+- Mobile: chặn người tham gia từ chi tiết kèo, bỏ chặn trong Hồ sơ. TypeScript và ca Playwright chặn/bỏ chặn đã qua.

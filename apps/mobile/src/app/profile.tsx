@@ -1,3 +1,4 @@
+import { BlockedAccounts } from '../features/BlockedAccounts';
 import { Platform } from 'react-native';
 import { disableNativePush, enableNativePush } from '../lib/native-push';
 import { useState } from 'react';
@@ -39,7 +40,7 @@ export default function ProfileScreen() {
       setBusy(false);
     }
   }
-  return <Screen><Heading>Đây là bạn.</Heading>{profile.loading && <Loading />}{profile.error && <Copy error>{profile.error.message}</Copy>}<Card><Field label="Tên hiển thị" value={name} maxLength={80} onChangeText={setName} /><Action label="Lưu tên" onPress={() => { void save(); }} disabled={busy || !name.trim()} />{!!message && <Copy>{message}</Copy>}<Copy>{session?.user.email}</Copy><Copy selectable>Mã của bạn: {session?.user.id}</Copy><Copy>Chia sẻ mã để bạn bè gửi lời mời kết bạn.</Copy></Card>{Platform.OS !== 'web' && <Action secondary label="Bật thông báo" onPress={() => { void enablePush(); }} disabled={busy} />}<Action secondary label="Đăng xuất thiết bị này" onPress={() => { void logout(); }} disabled={busy} />{confirmDelete ? <Card>
+  return <Screen><Heading>Đây là bạn.</Heading>{profile.loading && <Loading />}{profile.error && <Copy error>{profile.error.message}</Copy>}<Card><Field label="Tên hiển thị" value={name} maxLength={80} onChangeText={setName} /><Action label="Lưu tên" onPress={() => { void save(); }} disabled={busy || !name.trim()} />{!!message && <Copy>{message}</Copy>}<Copy>{session?.user.email}</Copy><Copy selectable>Mã của bạn: {session?.user.id}</Copy><Copy>Chia sẻ mã để bạn bè gửi lời mời kết bạn.</Copy></Card><BlockedAccounts />{Platform.OS !== 'web' && <Action secondary label="Bật thông báo" onPress={() => { void enablePush(); }} disabled={busy} />}<Action secondary label="Đăng xuất thiết bị này" onPress={() => { void logout(); }} disabled={busy} />{confirmDelete ? <Card>
       <Heading small>Xóa hồ sơ NO PLANS?</Heading>
       <Copy>Tên và ảnh đại diện sẽ bị xóa. Thiết bị sẽ ngừng nhận thông báo và hồ sơ này sẽ mất quyền truy cập NO PLANS.</Copy>
       <Action label="Xác nhận xóa hồ sơ" onPress={() => { void deleteProfile(); }} disabled={busy} />
