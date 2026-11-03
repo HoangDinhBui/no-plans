@@ -207,3 +207,5 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Kiểm tra cục bộ cho CI: invite 11 unit test và build đã qua; mobile 31 unit test và typecheck đã qua. Kết quả runner GitHub còn mở.
 - README cập nhật hướng dẫn chạy worker và cấu hình Supabase Admin/Expo Push.
 - README có quy trình diễn tập backup/restore PostgreSQL với database riêng. Chưa thực hiện diễn tập.
+- Node 24: mobile unit, typecheck, lint và Expo export iOS/Android/web đã qua cục bộ. Thiết bị thật và CI vẫn cần xác minh.
+- Hồi quy Playwright cục bộ đã qua toàn bộ 26 ca mobile web và 12 ca invite web.
