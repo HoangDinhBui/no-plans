@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -15,6 +16,28 @@ func New(readiness func(context.Context) error) http.Handler {
 		requestID := w.Header().Get("X-Request-ID")
 		serveProbe(w, r, readiness, requestID)
 	}))
+}
+
+type statusWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (w *statusWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
+
+func (w *statusWriter) WriteHeader(status int) {
+	if w.status != 0 {
+		return
+	}
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *statusWriter) Write(body []byte) (int, error) {
+	if w.status == 0 {
+		w.WriteHeader(http.StatusOK)
+	}
+	return w.ResponseWriter.Write(body)
 }
 
 func withHeaders(next http.Handler) http.Handler {
@@ -31,7 +54,15 @@ func withHeaders(next http.Handler) http.Handler {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 		defer cancel()
-		next.ServeHTTP(w, r.WithContext(ctx))
+		started := time.Now()
+		response := &statusWriter{ResponseWriter: w}
+		next.ServeHTTP(response, r.WithContext(ctx))
+		status := response.status
+		if status == 0 {
+			status = http.StatusOK
+		}
+		slog.InfoContext(ctx, "http request", "request_id", requestID,
+			"status", status, "duration_ms", time.Since(started).Milliseconds())
 	})
 }
 
