@@ -12,10 +12,11 @@ import (
 )
 
 type Group struct {
-	ID      string    `json:"id"`
-	OwnerID string    `json:"owner_id"`
-	Name    string    `json:"name"`
-	Members []Profile `json:"members"`
+	NotificationsMuted bool      `json:"notifications_muted"`
+	ID                 string    `json:"id"`
+	OwnerID            string    `json:"owner_id"`
+	Name               string    `json:"name"`
+	Members            []Profile `json:"members"`
 }
 
 func (s *Store) CreateGroup(ctx context.Context, actor, name, key string) (Group, error) {
@@ -42,7 +43,7 @@ func (s *Store) CreateGroup(ctx context.Context, actor, name, key string) (Group
 
 func readGroup(ctx context.Context, tx pgx.Tx, id, actor string) (Group, error) {
 	g := Group{Members: []Profile{}}
-	err := tx.QueryRow(ctx, `SELECT id::text,owner_id::text,name FROM groups WHERE id=$1 AND EXISTS(SELECT 1 FROM group_members WHERE group_id=groups.id AND user_id=$2)`, id, actor).Scan(&g.ID, &g.OwnerID, &g.Name)
+	err := tx.QueryRow(ctx, `SELECT g.id::text,g.owner_id::text,g.name,m.notifications_muted FROM groups g JOIN group_members m ON m.group_id=g.id AND m.user_id=$2 WHERE g.id=$1`, id, actor).Scan(&g.ID, &g.OwnerID, &g.Name, &g.NotificationsMuted)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return g, plans.ErrForbidden
 	}
@@ -197,4 +198,15 @@ func (s *Store) TransferGroup(ctx context.Context, id, actor, target string) err
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+func (s *Store) SetGroupNotificationsMuted(ctx context.Context, id, actor string, muted bool) error {
+	if !ids.Valid(id) {
+		return plans.ErrInvalid
+	}
+	tag, err := s.db.Exec(ctx, "UPDATE group_members SET notifications_muted=$3 WHERE group_id=$1 AND user_id=$2", id, actor, muted)
+	if err == nil && tag.RowsAffected() == 0 {
+		return plans.ErrForbidden
+	}
+	return err
 }

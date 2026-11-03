@@ -9,7 +9,7 @@ const groupID = '00000000-0000-4000-8000-000000000010';
 const requestID = '00000000-0000-4000-8000-000000000020';
 const pageCursor = '00000000-0000-4000-8000-000000000021';
 async function fixture(page: Page, owner = alice) {
-  const group: GroupDetail = { id: groupID, owner_id: owner, name: 'Hội cuối tuần', members: [{ id: alice, display_name: 'Alice' }, ...(owner === bob ? [{ id: bob, display_name: 'Bob' }] : [])] };
+  const group: GroupDetail = { id: groupID, owner_id: owner, notifications_muted: false, name: 'Hội cuối tuần', members: [{ id: alice, display_name: 'Alice' }, ...(owner === bob ? [{ id: bob, display_name: 'Bob' }] : [])] };
   const incoming: Friendship = { id: requestID, low_id: alice, high_id: bob, requester_id: bob, status: 'pending', peer: { id: bob, display_name: 'Bob' } };
   const outgoing: Friendship = { id: pageCursor, low_id: alice, high_id: dave, requester_id: alice, status: 'pending', peer: { id: dave, display_name: 'Dave' } };
   const accepted: Friendship = { id: '00000000-0000-4000-8000-000000000022', low_id: alice, high_id: carol, requester_id: alice, status: 'accepted', peer: { id: carol, display_name: 'Carol' } };
@@ -30,6 +30,10 @@ async function fixture(page: Page, owner = alice) {
     }
     if (path === '/v1/friend-requests/' + requestID + '/accept') { incoming.status = 'accepted'; await route.fulfill({ headers, json: incoming }); return; }
     if (path === '/v1/friend-requests') { await route.fulfill({ headers, json: url.searchParams.has('cursor') ? { items: [accepted] } : { items: [incoming, outgoing], next_cursor: pageCursor } }); return; }
+    if (path === '/v1/groups/' + groupID + '/notifications' && req.method() === 'PUT') {
+      group.notifications_muted = req.postDataJSON().muted;
+      await route.fulfill({ headers, json: { muted: group.notifications_muted } }); return;
+    }
     if (path.startsWith('/v1/groups/' + groupID) && req.method() !== 'GET') {
       state.actions.push(req.method() + ' ' + path);
       const target = path.split('/').at(-1)!;
@@ -101,4 +105,14 @@ test('ownership refresh removes an already-open owner confirmation', async ({ pa
   await expect(page.getByRole('button', { name: 'Rời nhóm', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Xác nhận chuyển quyền' })).toHaveCount(0);
   expect(state.actions).toEqual([]);
+});
+
+test('member can mute and unmute group notifications', async ({ page }) => {
+  await fixture(page, bob);
+  await page.goto('/groups/' + groupID);
+  await page.getByRole('button', { name: 'Tắt thông báo nhóm' }).click();
+  await expect(page.getByText('Thông báo đang tắt.')).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: 'Bật thông báo nhóm' }).click();
+  await expect(page.getByText('Thông báo đang bật.')).toBeVisible();
 });

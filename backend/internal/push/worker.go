@@ -36,6 +36,16 @@ func ProcessNext(ctx context.Context, db *store.Store, transport Transport) (boo
 		return false, err
 	}
 
+	if delivery.TicketID == "" {
+		allowed, err := db.PushRecipientEligible(ctx, delivery)
+		if err != nil {
+			return false, err
+		}
+		if !allowed {
+			_, err := db.ResolvePushDelivery(ctx, delivery, "", "RecipientIneligible", nil)
+			return true, err
+		}
+	}
 	if delivery.Kind == "plan.reminder" && delivery.TicketID == "" {
 		current, err := db.CurrentPlanReminder(ctx, delivery)
 		if err != nil {

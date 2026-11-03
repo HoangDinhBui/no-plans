@@ -104,3 +104,34 @@ SELECT device_id FROM resolved
 `, delivery.EventID, delivery.RecipientID, delivery.DeviceID, delivery.Attempt, ticket, failure, delayMillis, delivery.DeviceUpdatedAt)
 	return err == nil && tag.RowsAffected() == 1, err
 }
+
+// PushRecipientEligible rechecks access immediately before an unsent delivery.
+func (s *Store) PushRecipientEligible(ctx context.Context, delivery PushDelivery) (bool, error) {
+	var allowed bool
+	err := s.db.QueryRow(ctx, `
+ SELECT EXISTS (
+  SELECT 1 FROM outbox e
+  JOIN users actor ON actor.id = e.actor_id AND actor.deleted_at IS NULL
+  JOIN users recipient ON recipient.id = $2 AND recipient.deleted_at IS NULL
+  JOIN devices d ON d.id = $3 AND d.user_id = recipient.id AND d.updated_at = $4
+  WHERE e.id = $1
+   AND NOT EXISTS (
+    SELECT 1 FROM group_members gm
+    WHERE gm.user_id = recipient.id AND gm.notifications_muted
+      AND gm.group_id = CASE WHEN e.kind = 'group.member_added'
+       THEN (e.payload->>'entity_id')::uuid
+       ELSE (SELECT group_id FROM plans WHERE id = e.plan_id)
+      END
+   )
+   AND NOT EXISTS (
+    SELECT 1 FROM blocks b
+    WHERE (b.blocker_id, b.blocked_id) IN ((actor.id, recipient.id), (recipient.id, actor.id))
+   )
+   AND (e.plan_id IS NULL OR EXISTS (
+    SELECT 1 FROM plan_members m
+    WHERE m.plan_id = e.plan_id AND m.user_id = recipient.id
+     AND (e.kind NOT IN ('plan.created', 'plan.invited') OR m.response = 'invited')
+   ))
+ )`, delivery.EventID, delivery.RecipientID, delivery.DeviceID, delivery.DeviceUpdatedAt).Scan(&allowed)
+	return allowed, err
+}

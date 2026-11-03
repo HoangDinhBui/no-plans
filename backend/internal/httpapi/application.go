@@ -48,6 +48,7 @@ func NewApplicationWithOptions(db *store.Store, verifier *auth.Verifier, email *
 	mux.HandleFunc("/v1/groups/{groupID}", a.group)
 	mux.HandleFunc("/v1/groups/{groupID}/members/{userID}", a.groupMember)
 	mux.HandleFunc("/v1/groups/{groupID}/owner", a.groupOwner)
+	mux.HandleFunc("/v1/groups/{groupID}/notifications", a.groupNotifications)
 	mux.HandleFunc("/v1/friend-requests", a.friendRequests)
 	mux.HandleFunc("/v1/friend-requests/{requestID}/accept", a.friendAccept)
 	mux.HandleFunc("/v1/plans", a.plans)

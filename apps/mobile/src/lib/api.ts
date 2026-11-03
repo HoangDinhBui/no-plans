@@ -63,7 +63,7 @@ export class CreationIntent {
 export type Page<T> = { items: T[]; next_cursor?: string };
 export type Profile = { id: string; display_name: string; avatar_url?: string };
 export type Group = { id: string; name: string; owner_id: string };
-export type GroupDetail = Group & { members: Profile[] };
+export type GroupDetail = Group & { members: Profile[]; notifications_muted: boolean };
 export type Friendship = { id: string; low_id: string; high_id: string; requester_id: string; status: 'pending' | 'accepted'; peer: Profile };
 export type Participant = Profile & { response: RSVP };
 export type InviteLink = { id: string; plan_id: string; expires_at: string; max_uses: number; use_count: number; revoked_at?: string };

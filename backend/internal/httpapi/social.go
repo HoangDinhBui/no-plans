@@ -1,6 +1,10 @@
 package httpapi
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/HoangDinhBui/no-plans/backend/internal/plans"
+)
 
 func (a *application) me(w http.ResponseWriter, r *http.Request) {
 	if !method(w, r, "GET", "PATCH") {
@@ -170,4 +174,29 @@ func (a *application) friendAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, f)
+}
+
+func (a *application) groupNotifications(w http.ResponseWriter, r *http.Request) {
+	if !method(w, r, "PUT") {
+		return
+	}
+	id, ok := pathID(w, r, "groupID")
+	if !ok {
+		return
+	}
+	var body struct {
+		Muted *bool `json:"muted"`
+	}
+	if !decode(w, r, &body) {
+		return
+	}
+	if body.Muted == nil {
+		apiFailure(w, r, plans.ErrInvalid)
+		return
+	}
+	if err := a.db.SetGroupNotificationsMuted(r.Context(), id, actor(r), *body.Muted); err != nil {
+		apiFailure(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"muted": *body.Muted})
 }

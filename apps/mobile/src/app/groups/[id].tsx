@@ -16,15 +16,16 @@ function GroupScreen({ id }: { id: string }) {
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, [id, actor]);
   const data = group.data; const owner = data?.owner_id === actor;
   const confirmationAllowed = confirm && data && (confirm.action === 'leave' ? !owner : owner && data.members.some(member => member.id === confirm.member.id && member.id !== actor));
-  async function mutate(action: 'add' | 'remove' | 'transfer' | 'leave', target: string) {
+  async function mutate(action: 'add' | 'remove' | 'transfer' | 'leave' | 'mute', target = '') {
     if (inFlight.current || !data) return; inFlight.current = true; setBusy(true); setError(''); setNotice('');
     try {
       if (action === 'transfer') await api.request('/groups/' + data.id + '/owner', { method: 'PUT', body: { user_id: target } });
+      else if (action === 'mute') await api.request('/groups/' + data.id + '/notifications', { method: 'PUT', body: { muted: !data.notifications_muted } });
       else await api.request('/groups/' + data.id + '/members/' + target, { method: action === 'add' ? 'POST' : 'DELETE' });
       if (!mounted.current) return;
       setConfirm(null);
       if (action === 'leave') { router.replace('/groups'); return; }
-      setNotice(action === 'add' ? 'Đã thêm bạn vào nhóm.' : action === 'remove' ? 'Đã xóa thành viên khỏi nhóm.' : 'Đã chuyển quyền chủ nhóm.'); group.reload();
+      setNotice(action === 'mute' ? (data.notifications_muted ? 'Đã bật thông báo nhóm.' : 'Đã tắt thông báo nhóm.') : action === 'add' ? 'Đã thêm bạn vào nhóm.' : action === 'remove' ? 'Đã xóa thành viên khỏi nhóm.' : 'Đã chuyển quyền chủ nhóm.'); group.reload();
     } catch (e) {
       if (!mounted.current) return;
       if (e instanceof APIError && (e.status === 401 || (e.status === 403 && e.code === 'forbidden'))) { group.reject(e); setConfirm(null); }
@@ -33,6 +34,10 @@ function GroupScreen({ id }: { id: string }) {
   }
   return <Screen>{group.loading && <Loading />}{group.error && <Card><Copy error>{group.error.message}</Copy><Action secondary label="Thử tải lại nhóm" onPress={group.reload} /></Card>}
     {data && <><Heading>{data.name}</Heading><Copy>{owner ? 'Bạn đang quản lý nhóm này.' : 'Hội mình ở đây.'}</Copy>{!!error && <Copy error>{error}</Copy>}{!!notice && <Copy>{notice}</Copy>}
+      <Card><Heading small>Thông báo nhóm</Heading>
+        <Copy>{data.notifications_muted ? 'Thông báo đang tắt.' : 'Thông báo đang bật.'}</Copy>
+        <Action secondary label={data.notifications_muted ? 'Bật thông báo nhóm' : 'Tắt thông báo nhóm'} disabled={busy || group.loading} onPress={() => { void mutate('mute'); }} />
+      </Card>
       <Heading small>Thành viên</Heading>{data.members.map(member => <Card key={member.id}><Heading small>{member.display_name}</Heading><Copy>{member.id === data.owner_id ? 'Chủ nhóm' : member.id === actor ? 'Bạn' : 'Thành viên'}</Copy>
         {owner && member.id !== actor && <><Action secondary label={'Chuyển quyền cho ' + member.display_name} disabled={busy || group.loading} onPress={() => setConfirm({ action: 'transfer', member })} /><Action secondary label={'Xóa ' + member.display_name + ' khỏi nhóm'} disabled={busy || group.loading} onPress={() => setConfirm({ action: 'remove', member })} /></>}
       </Card>)}

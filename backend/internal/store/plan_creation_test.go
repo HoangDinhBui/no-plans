@@ -114,6 +114,32 @@ func TestGroupPlanSnapshotsMembershipAndReplaysCreation(t *testing.T) {
 			t.Fatalf("%s deliveries: %d, recipient %q, err %v", kind, count, recipient, err)
 		}
 	}
+	if err := s.SetGroupNotificationsMuted(ctx, g.ID, c, true); err != nil {
+		t.Fatal(err)
+	}
+	detail, err := s.GetGroup(ctx, g.ID, c)
+	if err != nil || !detail.NotificationsMuted {
+		t.Fatalf("mute preference: %+v, %v", detail, err)
+	}
+	for range len(events) {
+		delivery, err := s.ClaimPushDelivery(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if delivery.Kind != "plan.invited" {
+			continue
+		}
+		if allowed, err := s.PushRecipientEligible(ctx, delivery); err != nil || allowed {
+			t.Fatalf("muted delivery eligible: %v, %v", allowed, err)
+		}
+		if err := s.SetGroupNotificationsMuted(ctx, g.ID, c, false); err != nil {
+			t.Fatal(err)
+		}
+		if allowed, err := s.PushRecipientEligible(ctx, delivery); err != nil || !allowed {
+			t.Fatalf("unmuted delivery eligible: %v, %v", allowed, err)
+		}
+		break
+	}
 	if err = s.RevokePlanMember(ctx, p.ID, a, c); err != nil {
 		t.Fatal(err)
 	}
