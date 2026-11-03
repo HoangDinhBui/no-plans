@@ -133,6 +133,7 @@ export function App({ api, auth, invite }: { api: APIClient; auth: SupabaseClien
               : <div className="empty-state"><span className="empty-symbol" aria-hidden="true">↗</span><h2 id="card-title">{error ? 'Chưa mở được lời mời' : 'Có link mời rồi chứ?'}</h2><p className="muted">Mở link từ người tạo kèo để xem cuộc hẹn và trả lời với cả nhóm.{session ? ' Bạn đã đăng nhập sẵn sàng rồi.' : ''}</p></div>}
         {error && !unavailable && <div className="error-box"><p role="alert">{error.message}</p>{!(error instanceof APIError) || error.status !== 403 ? <button className="text-button" onClick={() => { setRetry(value => value + 1); setError(null); }} disabled={!!busy}>Thử lại</button> : null}{error instanceof APIError && error.status === 401 && auth && <button className="text-button" onClick={() => setAuthOpen(true)}>Đăng nhập lại</button>}</div>}
         {notice && <p className="notice" role="status">{notice}</p>}
+        {token && !invite.invalid && <a className="map-link" href={'no-plans://invite#token=' + encodeURIComponent(token)}>Mở trong ứng dụng NO PLANS</a>}
         <div className="card-bottom"><span aria-hidden="true">◎</span> Lời mời riêng tư. Cuộc vui của hội mình.</div>
       </section>
     </main>

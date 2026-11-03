@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -6,7 +7,10 @@ import { ThemeProvider, useTheme } from '../ui/theme';
 import { AuthScreen } from '../features/AuthScreen';
 function Routes() {
   const { session, configured } = useSession(); const c = useTheme();
-  if (!session || !configured) return <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}><AuthScreen /></SafeAreaView>;
-  return <Stack key={session.user.id} screenOptions={{ headerStyle: { backgroundColor: c.bg }, headerTintColor: c.ink, contentStyle: { backgroundColor: c.bg }, title: 'NO PLANS ↗', headerBackTitle: 'Quay lại' }}><Stack.Screen name="index" options={{ title: 'NO PLANS ↗' }} /><Stack.Screen name="plans/new" options={{ title: 'Lên kèo' }} /><Stack.Screen name="plans/[id]" options={{ title: 'Cuộc hẹn của hội mình' }} /><Stack.Screen name="groups" options={{ title: 'Hội của bạn' }} /><Stack.Screen name="groups/[id]" options={{ title: 'Hội mình' }} /><Stack.Screen name="discover" options={{ title: 'Khám phá' }} /><Stack.Screen name="friends" options={{ title: 'Bạn bè' }} /></Stack>;
+  return <Stack screenLayout={({ children, route }) => {
+    const publicRoute = route.name === 'invite' || route.name === 'link-error';
+    if (!publicRoute && (!session || !configured)) return <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}><AuthScreen /></SafeAreaView>;
+    return <Fragment key={session?.user.id ?? 'guest'}>{children}</Fragment>;
+  }} screenOptions={{ headerStyle: { backgroundColor: c.bg }, headerTintColor: c.ink, contentStyle: { backgroundColor: c.bg }, title: 'NO PLANS ↗', headerBackTitle: 'Quay lại' }}><Stack.Screen name="invite" options={{ title: 'Lời mời của bạn' }} /><Stack.Screen name="link-error" options={{ title: 'Mở lời mời' }} /><Stack.Screen name="index" options={{ title: 'NO PLANS ↗' }} /><Stack.Screen name="plans/new" options={{ title: 'Lên kèo' }} /><Stack.Screen name="plans/[id]" options={{ title: 'Cuộc hẹn của hội mình' }} /><Stack.Screen name="groups" options={{ title: 'Hội của bạn' }} /><Stack.Screen name="groups/[id]" options={{ title: 'Hội mình' }} /><Stack.Screen name="discover" options={{ title: 'Khám phá' }} /><Stack.Screen name="friends" options={{ title: 'Bạn bè' }} /></Stack>;
 }
 export default function Layout() { return <SafeAreaProvider><ThemeProvider><SessionProvider><StatusBar style="auto" /><Routes /></SessionProvider></ThemeProvider></SafeAreaProvider>; }

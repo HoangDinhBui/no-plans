@@ -84,4 +84,6 @@ Chi tiết kèo có người tham gia/RSVP và quản lý lời mời: owner m�
 
 Khám phá có bộ lọc hoạt động/loại/khu vực/ngân sách/số người và phân trang. Chi phí chưa biết không được hiển thị thành miễn phí. Trong kèo, chủ kèo đề xuất custom venue hoặc mục catalogue; mỗi thành viên một phiếu có thể đổi trước khi chốt. Ý tưởng vẫn nhận phiếu nhưng cần nơi gặp cụ thể để chốt. Migration006 lưu loại option vào snapshot; chọn địa điểm dùng If-Match và yêu cầu kiểm tra lại khi version thay đổi. Chọn nơi gặp không tự chốt kèo.
 
+Trang lời mời có nút mở ứng dụng đã cài qua `no-plans://invite#token=…`. Người nhận cũng có thể tiếp tục trên web. App giữ lời mời qua đăng nhập và yêu cầu bấm tham gia trước khi redeem. Link riêng tư `no-plans://plans/<UUID>` mở màn kèo với kiểm tra quyền từ API. Kiểm thử thiết bị thật và cấu hình liên kết HTTPS tự mở app cần bản build cùng domain triển khai.
+
 Form tạo kèo lưu nháp theo tài khoản trên thiết bị, giữ khóa retry qua reload và chỉ gửi sau khi lưu được khóa. Lần gửi không rõ kết quả quá23 giờ yêu cầu kiểm tra danh sách trước khi bỏ nháp để tránh gửi lại ngoài cửa sổ replay của server. Nháp chứa nội dung bạn nhập, không chứa JWT. `npm run test:e2e` kiểm tra Expo web với HTTP fixtures bằng Chromium riêng (`npx playwright install chromium`); chưa thay thế luồng native/Go/Supabase cloud thực.

@@ -87,6 +87,14 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Quy ước lưu tiến độ
 
+## Deep links mobile — 2026-11-03
+
+- App nhận `no-plans://invite#token=…` qua Expo Router native intent. Link HTTPS trên web có nút mở app, và người nhận có thể tiếp tục ngay trên web. App lưu lời mời đang chờ bằng SecureStore trên native và sessionStorage trên Expo web.
+- Preview chỉ hiển thị tên, loại và giờ hẹn. Sau đăng nhập, người nhận bấm tham gia để redeem rồi tải chi tiết bằng quyền thành viên. Link ID riêng tư vẫn cần đăng nhập và kiểm tra quyền. Link đến sau được ưu tiên nếu phản hồi redeem cũ đến muộn.
+- Đã bỏ fragment trước khi Expo Router xử lý popstate. Link sai hoặc quá dài xóa lời mời chờ cũ. Navigator vẫn được giữ khi đăng xuất để nhận link đến lúc màn đăng nhập đang mở. URL khởi chạy Expo Go được hỗ trợ trong dev.
+- 31 unit tests mobile, 24 browser tests mobile và 12 browser tests web invite đã qua. Typecheck, lint, build web invite và export Expo Android/iOS/web đều qua.
+- Còn kiểm chứng nhận link trên Android/iOS thật và thiết lập liên kết HTTPS tự mở app khi có domain và định danh build. Worker thông báo, safety và các bước beta vẫn nằm trong mục tiêu.
+
 ## Voting/discovery mobile + option kind đang hoàn thiện — 2026-11-02
 
 - Base010193c. Đã tái hiện2 PostgreSQL tests RED: catalogue idea có thể thành location và legacy idea selection có thể confirm. Migration006 thêm snapshot place_options.kind, backfill từ catalogue hiện tại (custom defaultplace). Add/list trả kind; select idea trả409 venue_required. Chốt mới chặn selected idea; owner sửa location cụ thể sẽ clear selected ID và confirm được. Không tự rewrite lịch sử confirmed cũ trong migration.
