@@ -97,3 +97,14 @@ go run ./cmd/worker
 ```
 
 Worker dùng cùng `DATABASE_URL` với API. Đặt `EXPO_ACCESS_TOKEN` nếu bật xác thực Expo Push. Cấu hình cả `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` trên worker để xử lý hàng đợi xóa danh tính. Giữ khóa quản trị trong cấu hình bí mật phía máy chủ.
+
+### Diễn tập khôi phục PostgreSQL trước beta
+
+Tạo backup hằng ngày bằng `pg_dump` ở định dạng custom. Lưu bản sao trong kho backup có mã hóa và giới hạn quyền đọc. Dùng thông tin kết nối được cung cấp cho operator qua cấu hình bí mật.
+
+```powershell
+pg_dump --dbname $env:DATABASE_URL --format=custom --file no-plans.dump
+pg_restore --dbname $env:RESTORE_DATABASE_URL --no-owner --no-privileges --exit-on-error no-plans.dump
+```
+
+`RESTORE_DATABASE_URL` trỏ đến database trống dành riêng cho diễn tập. Sau restore, đối chiếu migration và số bản ghi của các bảng chính với bản sao, rồi chạy API trên database khôi phục để kiểm tra `/readyz` và đọc một kèo fixture. Ghi thời điểm backup, thời gian khôi phục và kết quả vào nhật ký vận hành. Chỉ chạy worker với dịch vụ ngoài giả lập trong môi trường diễn tập.
