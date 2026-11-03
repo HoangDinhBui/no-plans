@@ -202,3 +202,6 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Hàng đợi xóa danh tính lưu cùng transaction xóa hồ sơ, backfill hồ sơ đã xóa và có lease một phút để worker thử lại. Còn kết nối Supabase Admin và test vòng đời lease.
 - Worker xử lý xóa danh tính khi có SUPABASE_URL và SUPABASE_SERVICE_ROLE_KEY. Cần xác minh retry khi danh tính đã bị xóa và kiểm thử client giả lập.
 - Worker xóa danh tính Supabase: bộ go test ./... -count=1 đã qua với PostgreSQL 15. Client được kiểm thử với phản hồi giả lập, chưa chạy với Supabase thật.
+- Đã thêm workflow backend chạy go test ./... với PostgreSQL 17 trên push/PR. Chờ lần chạy GitHub Actions để xác minh.
+- App CI chạy Node 24, npm ci, unit, build/export và Playwright cho mobile và invite web; mobile có typecheck/lint và Expo offline.
+- Kiểm tra cục bộ cho CI: invite 11 unit test và build đã qua; mobile 31 unit test và typecheck đã qua. Kết quả runner GitHub còn mở.

@@ -1,0 +1,37 @@
+name: App CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  apps:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [mobile, invite]
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    env:
+      EXPO_OFFLINE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/${{ matrix.app }}/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - if: matrix.app == 'mobile'
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run export
+      - if: matrix.app == 'invite'
+        run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
