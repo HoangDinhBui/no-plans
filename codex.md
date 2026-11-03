@@ -205,3 +205,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Đã thêm workflow backend chạy go test ./... với PostgreSQL 17 trên push/PR. Chờ lần chạy GitHub Actions để xác minh.
 - App CI chạy Node 24, npm ci, unit, build/export và Playwright cho mobile và invite web; mobile có typecheck/lint và Expo offline.
 - Kiểm tra cục bộ cho CI: invite 11 unit test và build đã qua; mobile 31 unit test và typecheck đã qua. Kết quả runner GitHub còn mở.
+- README cập nhật hướng dẫn chạy worker và cấu hình Supabase Admin/Expo Push.

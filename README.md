@@ -54,7 +54,7 @@ Không có TEST_DATABASE_URL thì PostgreSQL test bị skip. Auth test tạo HTT
 
 ## Phạm vi chưa hoàn tất
 
-Mobile Expo, worker push, reports/account deletion và các bước beta/device/store vẫn đang trong kế hoạch; chưa sẵn sàng phát hành. Backend invite links, voting/discovery và web invite đã có implementation và kiểm thử cục bộ; kết nối Supabase cloud thực vẫn cần kiểm chứng.
+Mobile Expo, web lời mời, worker push, báo cáo và xóa hồ sơ đã có triển khai. Beta còn cần xác minh Supabase cloud, thông báo trên thiết bị thật và kiểm thử PostgreSQL 17 trên CI.
 
 ## Invite links và catalogue
 
@@ -87,3 +87,13 @@ Khám phá có bộ lọc hoạt động/loại/khu vực/ngân sách/số ngư�
 Trang lời mời có nút mở ứng dụng đã cài qua `no-plans://invite#token=…`. Người nhận cũng có thể tiếp tục trên web. App giữ lời mời qua đăng nhập và yêu cầu bấm tham gia trước khi redeem. Link riêng tư `no-plans://plans/<UUID>` mở màn kèo với kiểm tra quyền từ API. Kiểm thử thiết bị thật và cấu hình liên kết HTTPS tự mở app cần bản build cùng domain triển khai.
 
 Form tạo kèo lưu nháp theo tài khoản trên thiết bị, giữ khóa retry qua reload và chỉ gửi sau khi lưu được khóa. Lần gửi không rõ kết quả quá23 giờ yêu cầu kiểm tra danh sách trước khi bỏ nháp để tránh gửi lại ngoài cửa sổ replay của server. Nháp chứa nội dung bạn nhập, không chứa JWT. `npm run test:e2e` kiểm tra Expo web với HTTP fixtures bằng Chromium riêng (`npx playwright install chromium`); chưa thay thế luồng native/Go/Supabase cloud thực.
+
+### Worker
+
+Sau khi chạy migration, khởi động tiến trình riêng trong thư mục backend.
+
+```powershell
+go run ./cmd/worker
+```
+
+Worker dùng cùng `DATABASE_URL` với API. Đặt `EXPO_ACCESS_TOKEN` nếu bật xác thực Expo Push. Cấu hình cả `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` trên worker để xử lý hàng đợi xóa danh tính. Giữ khóa quản trị trong cấu hình bí mật phía máy chủ.
