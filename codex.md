@@ -221,3 +221,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - README mô tả các luồng MVP đã triển khai và dẫn tới quy trình staging. Backend CI PostgreSQL 17 đã qua tại 1491752.
 - API ghi log có cấu trúc với request_id, status và duration_ms. Bộ httpapi đã qua với PostgreSQL cục bộ. Dashboard và đo tải staging còn mở.
 - Mobile: chặn người tham gia từ chi tiết kèo, bỏ chặn trong Hồ sơ. TypeScript và ca Playwright chặn/bỏ chặn đã qua.
+- Thông báo chặn và báo cáo thành công có role status trên web. TypeScript và hai ca Playwright đã qua; VoiceOver/TalkBack còn kiểm tra trên thiết bị.

@@ -29,7 +29,7 @@ export function ParticipantReport({ planId, targetId, name }: { planId: string; 
       inFlight.current = false;
     }
   }
-  if (status === 'sent') return <Copy>Đã gửi báo cáo.</Copy>;
+  if (status === 'sent') return <Copy announce>Đã gửi báo cáo.</Copy>;
   if (!open) return <Action secondary label={'Báo cáo ' + name} onPress={() => setOpen(true)} />;
   const busy = status === 'sending';
   return <Card>

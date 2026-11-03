@@ -112,7 +112,7 @@ test('participant can report another participant with a selected reason', async 
   await expect(send).toBeDisabled();
   await page.getByRole('button', { name: 'Tin rác' }).click();
   await send.click();
-  await expect(page.getByText('Đã gửi báo cáo.')).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Đã gửi báo cáo.' })).toBeVisible();
   expect(state.reports).toEqual([{ plan_id: planID, target_id: dave, reason: 'spam' }]);
 });
 
@@ -121,7 +121,7 @@ test('participant can block and unblock another account', async ({ page }) => {
   await page.getByRole('button', { name: 'Chặn Dave', exact: true }).click();
   expect(state.blocked).toBe(false);
   await page.getByRole('button', { name: 'Xác nhận chặn' }).click();
-  await expect(page.getByText('Đã chặn Dave.')).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Đã chặn Dave.' })).toBeVisible();
   await page.goto('/profile');
   await page.getByRole('button', { name: 'Bỏ chặn Dave' }).click();
   await expect(page.getByRole('button', { name: 'Bỏ chặn Dave' })).toHaveCount(0);

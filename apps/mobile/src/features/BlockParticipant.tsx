@@ -22,7 +22,7 @@ export function BlockParticipant({ id, name }: { id: string; name: string }) {
     }
   }
 
-  if (state === 'blocked') return <Copy>Đã chặn {name}.</Copy>;
+  if (state === 'blocked') return <Copy announce>Đã chặn {name}.</Copy>;
   if (!confirm) return <Action secondary label={'Chặn ' + name} onPress={() => setConfirm(true)} />;
   return <Card>
     <Heading small>Chặn {name}?</Heading>
