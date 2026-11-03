@@ -69,7 +69,7 @@ Nhóm/bạn/chặn dùng cursor UUID và sắp theo ID tăng dần. Kèo sắp t
 
 Lỗi JSON gồm `code` và `request_id`, đồng thời có header `X-Request-ID` để tra cứu. 400 input/cursor/JSON sai; 401 token không hợp lệ; 403 không có quyền hoặc email_unverified; 409 plan_full/plan_closed/version_conflict/idempotency_conflict; 413 body quá 64 KiB; 415 sai Content-Type; 428 thiếu version; 429 rate_limited; 503 auth_unavailable. Không trả lỗi SQL, token hoặc dữ liệu nhạy cảm trong response/log.
 
-Quota beta hiện tại: tối đa 300 request authenticated/phút/actor; 200 người nhận lời mời/giờ/actor; 10 lời mời/ngày/cặp actor–recipient; 20 đợt lời mời/giờ/actor–group. Các giới hạn chia sẻ qua PostgreSQL; quota lời mời cùng transaction với nghiệp vụ và outbox. 429 có Retry-After 60 giây; giới hạn cửa sổ dài hơn có thể vẫn chưa hết sau lần thử đó. Worker retention cho dữ liệu quota sẽ hoàn thiện trước beta.
+Quota beta hiện tại: tối đa 300 request authenticated/phút/actor; 200 người nhận lời mời/giờ/actor; 10 lời mời/ngày/cặp actor–recipient; 20 đợt lời mời/giờ/actor–group. Các giới hạn chia sẻ qua PostgreSQL; quota lời mời cùng transaction với nghiệp vụ và outbox. 429 có Retry-After 60 giây; giới hạn cửa sổ dài hơn có thể vẫn chưa hết sau lần thử đó. Worker dọn bản ghi quota cũ hơn 24 giờ khi khởi động và mỗi giờ sau đó.
 
 Web chỉ được gọi từ exact origin trong `CORS_ORIGINS`, ví dụ `http://localhost:5173`; không dùng wildcard hoặc URL có path. Preflight không cần JWT; credentials cookies không được bật. Native app không cần CORS origin. Cần cấu hình lại origins HTTPS khi production.
 

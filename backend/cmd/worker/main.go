@@ -33,7 +33,15 @@ func main() {
 		}
 	}
 	expo := push.NewExpo(os.Getenv("EXPO_ACCESS_TOKEN"))
+	var nextQuotaPurge time.Time
 	for ctx.Err() == nil {
+		if time.Now().After(nextQuotaPurge) {
+			nextQuotaPurge = time.Now().Add(time.Hour)
+			if err := db.PurgeExpiredQuotas(ctx); err != nil && ctx.Err() == nil {
+				log.Print("quota retention failed")
+				nextQuotaPurge = time.Now().Add(time.Minute)
+			}
+		}
 		if admin != nil {
 			if err := processIdentityDeletion(ctx, db, admin); err != nil && ctx.Err() == nil {
 				log.Printf("identity deletion worker: %v", err)

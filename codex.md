@@ -209,3 +209,5 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - README có quy trình diễn tập backup/restore PostgreSQL với database riêng. Chưa thực hiện diễn tập.
 - Node 24: mobile unit, typecheck, lint và Expo export iOS/Android/web đã qua cục bộ. Thiết bị thật và CI vẫn cần xác minh.
 - Hồi quy Playwright cục bộ đã qua toàn bộ 26 ca mobile web và 12 ca invite web.
+- Retention: thêm truy vấn dọn bản ghi quota API và lời mời ngoài cửa sổ 24 giờ. Còn lịch chạy worker và kiểm thử PostgreSQL.
+- TestPurgeExpiredQuotas đã qua trên PostgreSQL cục bộ. Backend CI PostgreSQL 17 và invite web CI đã qua tại 1e19fe2; mobile CI đang chạy.
