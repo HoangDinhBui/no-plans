@@ -89,6 +89,9 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Outbox thông báo
 
+- Migration 008 lưu từng lượt gửi theo sự kiện, người nhận và thiết bị. Mở rộng outbox thành bản ghi gửi và xác nhận lease trong cùng câu lệnh PostgreSQL. Hiện ánh xạ sự kiện bạn bè, thêm thành viên nhóm, sửa, chốt và hủy kèo.
+- Expo client có timeout, giới hạn số mục mỗi yêu cầu, đọc ticket và receipt. Còn nối vòng lặp worker, retry theo từng thiết bị, vô hiệu hóa token hết hiệu lực, thêm sự kiện mời kèo và kết nối đăng ký từ mobile.
+
 - Store đã có thao tác nhận sự kiện bằng PostgreSQL `FOR UPDATE SKIP LOCKED`, gia hạn quyền xử lý bằng lease khi nhận lại, và xác nhận theo số lần thử để loại phản hồi từ lease cũ.
 - Có thể hoàn tất hoặc lên lịch thử lại. Sự kiện hết số lần thử được chuyển sang dead letter khi đến lượt nhận tiếp.
 - Migration 007 và API `PUT/DELETE /v1/devices/{deviceID}` lưu, cập nhật và thu hồi đăng ký theo tài khoản đã xác thực. Token đang được đăng ký chỉ thuộc một thiết bị. Khi đổi tài khoản trên cùng thiết bị, client cần thu hồi đăng ký cũ trước.
