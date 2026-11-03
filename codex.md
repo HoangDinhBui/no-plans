@@ -182,3 +182,7 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Ruling: làm trực tiếp trên nhánh feature trong workspace hiện tại thay vì tạo worktree khác; dự án chưa có source trước mốc này, cần giữ ngữ cảnh codex.md. Không merge main trong khi MVP còn đang làm.
 - Ruling: dùng cluster PostgreSQL 15 đã cài để kiểm chứng khi Docker Engine không chạy; compose vẫn chỉ định PostgreSQL 17. Cần chạy thêm trên PostgreSQL 17 trong CI trước beta.
 - Mục tiêu đầy đủ vẫn là MVP theo thiết kế đã duyệt; foundation là tiến độ, không phải thay thế phạm vi.
+
+- Đã thêm truy vấn lấy lease và ghi kết quả theo số lần claim cho từng lượt gửi. Còn cần kiểm thử PostgreSQL và nối worker với Expo.
+- Worker backend chạy bằng go run ./cmd/worker trong backend với DATABASE_URL và EXPO_ACCESS_TOKEN nếu Expo yêu cầu. Cần kiểm thử tích hợp và thu hồi token lỗi.
+- PostgreSQL 15: TestPushDelivery xác nhận lưu ticket, chặn ghi từ lease cũ, thu hồi đăng ký hết hiệu lực và giữ phiên đăng ký mới hơn. Worker chưa được thử trên thiết bị thật.
