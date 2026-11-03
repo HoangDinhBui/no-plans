@@ -41,6 +41,7 @@ func NewApplicationWithOptions(db *store.Store, verifier *auth.Verifier, email *
 	a := &application{db: db, verifier: verifier, email: email, inviteSecret: append([]byte(nil), options.InviteSecret...), previewLimiter: newPublicLimiter(120, time.Minute, 4096)}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/me", a.me)
+	mux.HandleFunc("/v1/devices/{deviceID}", a.device)
 	mux.HandleFunc("/v1/blocks", a.blocks)
 	mux.HandleFunc("/v1/blocks/{userID}", a.unblock)
 	mux.HandleFunc("/v1/groups", a.groups)

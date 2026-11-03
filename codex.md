@@ -91,7 +91,8 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 - Store đã có thao tác nhận sự kiện bằng PostgreSQL `FOR UPDATE SKIP LOCKED`, gia hạn quyền xử lý bằng lease khi nhận lại, và xác nhận theo số lần thử để loại phản hồi từ lease cũ.
 - Có thể hoàn tất hoặc lên lịch thử lại. Sự kiện hết số lần thử được chuyển sang dead letter khi đến lượt nhận tiếp.
-- Toàn bộ Go suite đã qua trên PostgreSQL cục bộ. Còn nối worker gửi, bảng thiết bị và theo dõi kết quả Expo Push.
+- Migration 007 và API `PUT/DELETE /v1/devices/{deviceID}` lưu, cập nhật và thu hồi đăng ký theo tài khoản đã xác thực. Token đang được đăng ký chỉ thuộc một thiết bị. Khi đổi tài khoản trên cùng thiết bị, client cần thu hồi đăng ký cũ trước.
+- Toàn bộ Go suite đã qua trên PostgreSQL cục bộ, gồm kiểm thử quyền sở hữu thiết bị và đăng ký lại sau thu hồi. Còn nối đăng ký từ mobile, worker gửi và theo dõi kết quả Expo Push.
 
 ## Deep links mobile — 2026-11-03
 
