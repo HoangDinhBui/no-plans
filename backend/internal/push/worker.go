@@ -61,7 +61,7 @@ func processDelivery(ctx context.Context, transport Transport, delivery store.Pu
 
 	tickets, err := transport.Send(ctx, []Message{{
 		To: delivery.Token, Title: "NO PLANS", Body: "Bạn có thông báo mới",
-		Data: map[string]string{"eventId": delivery.EventID, "planId": delivery.PlanID},
+		Data: map[string]string{"eventId": delivery.EventID, "planId": delivery.PlanID, "recipientId": delivery.RecipientID},
 	}})
 	if err != nil || len(tickets) != 1 {
 		return "", "SendRequestFailed", &retry

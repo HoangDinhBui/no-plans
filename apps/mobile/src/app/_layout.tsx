@@ -1,3 +1,4 @@
+import { usePushNavigation } from '../lib/push-navigation';
 import { Fragment } from 'react';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +8,7 @@ import { ThemeProvider, useTheme } from '../ui/theme';
 import { AuthScreen } from '../features/AuthScreen';
 function Routes() {
   const { session, configured } = useSession(); const c = useTheme();
+  usePushNavigation(configured ? session?.user.id : undefined);
   return <Stack screenLayout={({ children, route }) => {
     const publicRoute = route.name === 'invite' || route.name === 'link-error';
     if (!publicRoute && (!session || !configured)) return <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}><AuthScreen /></SafeAreaView>;
