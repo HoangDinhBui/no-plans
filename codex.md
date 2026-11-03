@@ -218,3 +218,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Review toàn nhánh: chống trùng nhắc lịch theo giờ bắt đầu (kể cả bản ghi cũ) và cho phép thử lại DELETE /v1/me sau khi đã xóa. Các ca hồi quy PostgreSQL đã qua.
 - HTTP regression đã qua: phiên đã xóa hồ sơ có thể thu hồi lại thiết bị trước đăng xuất; đọc hồ sơ vẫn bị từ chối.
 - README ghi điều kiện staging và các bước kiểm thử hai thiết bị. Chưa có dự án EAS, thông tin xác thực push hoặc thiết bị staging được xác minh.
+- README mô tả các luồng MVP đã triển khai và dẫn tới quy trình staging. Backend CI PostgreSQL 17 đã qua tại 1491752.

@@ -6,7 +6,7 @@ NO PLANS — Stop scrolling. Start going.
 
 ## Trạng thái
 
-Đang triển khai MVP theo thiết kế đã duyệt. Backend đã có API xác thực, hồ sơ, kết bạn, nhóm, tạo/mời/RSVP/chốt/hủy kèo, chặn người dùng, phân trang và quota. Giao diện và các chức năng MVP còn lại đang triển khai.
+MVP đã có ứng dụng Expo, web lời mời, API Go và worker. Các luồng chính gồm tạo kèo, lời mời, RSVP, bình chọn địa điểm, nhắc lịch, báo cáo và xóa hồ sơ. Xem phần xác minh trên staging để biết các bước còn lại trước beta.
 
 - [Thiết kế hệ thống](docs/system-design.md)
 - [Ngữ cảnh và tiến độ](codex.md)
