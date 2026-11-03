@@ -197,3 +197,5 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Playwright: ca bật/tắt thông báo nhóm và giữ trạng thái sau reload đã qua với EXPO_OFFLINE=1.
 - An toàn: migration 012 thêm lưu báo cáo theo lý do có cấu trúc và tham chiếu người dùng/kèo. Còn bổ sung xác thực quyền, giới hạn gửi, API và UI.
 - Báo cáo thành viên trong kèo: API xác thực, giới hạn 10/24h, lý do cố định và UI chọn lý do. Test store/HTTP PostgreSQL, TypeScript và ca Playwright báo cáo đã qua.
+- Xóa tài khoản: bắt đầu bằng transaction ẩn danh hồ sơ và thu hồi toàn bộ thiết bị. Đăng ký push khóa hàng user để tuần tự với xóa tài khoản. Còn test, API và xử lý danh tính Supabase.
+- Xóa hồ sơ NO PLANS: màn xác nhận, DELETE /v1/me, ẩn danh và thu hồi push trong transaction. Test PostgreSQL store/HTTP và TypeScript đã qua. Còn xóa danh tính Supabase và retention.

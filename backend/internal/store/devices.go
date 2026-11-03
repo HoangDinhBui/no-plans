@@ -17,7 +17,7 @@ func (s *Store) RegisterDevice(ctx context.Context, actor, id, platform, token s
 	}
 	tag, err := s.db.Exec(ctx, `
 		INSERT INTO devices (id, user_id, platform, push_token)
-		SELECT $1, id, $3, $4 FROM users WHERE id = $2 AND deleted_at IS NULL
+		SELECT $1, id, $3, $4 FROM users WHERE id = $2 AND deleted_at IS NULL FOR SHARE
 		ON CONFLICT (id) DO UPDATE SET platform = excluded.platform,
 			push_token = excluded.push_token, updated_at = now()
 		WHERE devices.user_id = excluded.user_id`, id, actor, platform, token)

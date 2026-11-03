@@ -31,3 +31,12 @@ func TestBlockRoutesPreventInvitations(t *testing.T) {
 	call(t, f.handler, "DELETE", "/v1/blocks/"+a, tb, "", "", 200)
 	call(t, f.handler, "POST", "/v1/friend-requests", ta, `{"recipient_id":"`+b+`"}`, "unblocked", 201)
 }
+
+func TestDeleteProfileRejectsExistingToken(t *testing.T) {
+	f := setupApp(t)
+	token := f.token(ids.New())
+	call(t, f.handler, "GET", "/v1/me", token, "", "", 200)
+	call(t, f.handler, "DELETE", "/v1/me", "", "", "", 401)
+	call(t, f.handler, "DELETE", "/v1/me", token, "", "", 200)
+	call(t, f.handler, "GET", "/v1/me", token, "", "", 403)
+}

@@ -7,7 +7,15 @@ import (
 )
 
 func (a *application) me(w http.ResponseWriter, r *http.Request) {
-	if !method(w, r, "GET", "PATCH") {
+	if !method(w, r, "GET", "PATCH", "DELETE") {
+		return
+	}
+	if r.Method == "DELETE" {
+		if err := a.db.DeleteAccount(r.Context(), actor(r)); err != nil {
+			apiFailure(w, r, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 		return
 	}
 	if r.Method == "GET" {

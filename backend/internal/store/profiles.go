@@ -62,3 +62,20 @@ func (s *Store) PatchProfile(ctx context.Context, id string, name, avatar *strin
 	}
 	return p, err
 }
+
+func (s *Store) DeleteAccount(ctx context.Context, actor string) error {
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	if _, err = tx.Exec(ctx, `UPDATE users SET deleted_at=now(),
+  display_name='Tài khoản đã xóa', avatar_url=''
+  WHERE id=$1 AND deleted_at IS NULL`, actor); err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, "DELETE FROM devices WHERE user_id=$1", actor); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
