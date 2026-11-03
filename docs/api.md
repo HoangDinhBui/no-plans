@@ -15,6 +15,11 @@ Mobile/web đăng ký, đăng nhập, xác minh email và refresh session bằng
 | Method | Path | Body / mục đích |
 |---|---|---|
 | GET | `/me` | Hồ sơ của người gọi |
+| DELETE | `/me` | Ẩn danh hồ sơ, thu hồi đăng ký push và xếp hàng xóa danh tính |
+| PUT | `/devices/{deviceId}` | Đăng ký thiết bị với `platform` và `push_token` |
+| DELETE | `/devices/{deviceId}` | Thu hồi đăng ký của thiết bị thuộc người gọi |
+| POST | `/reports` | Gửi `target_id`, `reason` và `plan_id` tùy chọn. Trả mã báo cáo với HTTP 201 |
+| PUT | `/groups/{id}/notifications` | Lưu `muted` cho thành viên đang đăng nhập |
 | PATCH | `/me` | `display_name`, `avatar_url` tùy chọn; trường không gửi được giữ nguyên |
 | GET | `/friend-requests` | Các lời mời kết bạn pending/accepted của người gọi, kèm profile peer |
 | POST | `/friend-requests` | `recipient_id`; cần email verified và Idempotency-Key |
@@ -75,7 +80,7 @@ Web chỉ được gọi từ exact origin trong `CORS_ORIGINS`, ví dụ `http:
 
 ## Chưa có ở mốc này
 
-Token invite links/deep link, voting/discovery, push worker, reports, account deletion và mobile/web UI đang được triển khai theo kế hoạch. Outbox đã lưu sự kiện nhưng chưa gửi push thật. Kiểm thử hiện dùng Supabase-compatible HTTP fixture và JWT ký thật; chưa chứng minh kết nối tài khoản Supabase cloud hay thiết bị thật.
+Worker gửi push và xử lý receipt qua Expo. Kiểm thử Supabase dùng HTTP fixture và JWT ký thật. Xác minh trên Supabase staging và thiết bị thật vẫn còn mở.
 ## Invite links, voting và catalogue
 
 Các endpoint dưới đây dùng JWT như core API, trừ preview public. Token lời mời chỉ gửi trong header `X-Invite-Token`, không đặt vào URL API hoặc query string.
