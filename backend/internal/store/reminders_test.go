@@ -20,6 +20,12 @@ func TestPlanReminderBecomesStaleAfterReschedule(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	if _, err := s.db.Exec(ctx, "UPDATE plans SET version=version+1 WHERE id=$1", plan.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.QueuePlanReminders(ctx); err != nil {
+		t.Fatal(err)
+	}
 	events, err := s.ClaimOutbox(ctx, 10, 3, time.Minute)
 	if err != nil {
 		t.Fatal(err)
@@ -48,5 +54,25 @@ func TestPlanReminderBecomesStaleAfterReschedule(t *testing.T) {
 	}
 	if current, err := s.CurrentPlanReminder(ctx, delivery); err != nil || current {
 		t.Fatalf("rescheduled reminder: %v %v", current, err)
+	}
+}
+
+func TestQueuePlanRemindersPreservesLegacySchedule(t *testing.T) {
+	s, ctx, _, _, _, plan := inviteFixture(t)
+	if _, err := s.db.Exec(ctx, "UPDATE plans SET status='confirmed', starts_at=now()+interval '30 minutes' WHERE id=$1", plan.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.db.Exec(ctx, `
+ INSERT INTO outbox(plan_id, actor_id, kind, payload, processed_at)
+ SELECT id, owner_id, 'plan.reminder', jsonb_build_object('version', version, 'starts_at', starts_at), now()
+ FROM plans WHERE id=$1`, plan.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.QueuePlanReminders(ctx); err != nil {
+		t.Fatal(err)
+	}
+	var count int
+	if err := s.db.QueryRow(ctx, "SELECT count(*) FROM outbox WHERE plan_id=$1 AND kind='plan.reminder'", plan.ID).Scan(&count); err != nil || count != 1 {
+		t.Fatalf("legacy schedule reminders: %d, %v", count, err)
 	}
 }

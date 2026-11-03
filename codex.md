@@ -215,3 +215,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Restore drill PostgreSQL 15: /readyz HTTP 200, GET /v1/places xác thực HTTP 200 và 9 mục đúng bộ lọc mặc định people=1. SQL xác nhận 10 mục hoạt động, một mục yêu cầu tối thiểu hai người. Chưa diễn tập trên staging.
 - Backend CI PostgreSQL 17 đã qua tại bdc667a, gồm TestPurgeExpiredQuotas.
 - App CI đã qua cả mobile và invite web tại bdc667a. Beta còn cần thiết bị thật, Supabase staging, restore trên staging và review toàn nhánh.
+- Review toàn nhánh: chống trùng nhắc lịch theo giờ bắt đầu (kể cả bản ghi cũ) và cho phép thử lại DELETE /v1/me sau khi đã xóa. Các ca hồi quy PostgreSQL đã qua.

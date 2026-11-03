@@ -38,5 +38,6 @@ func TestDeleteProfileRejectsExistingToken(t *testing.T) {
 	call(t, f.handler, "GET", "/v1/me", token, "", "", 200)
 	call(t, f.handler, "DELETE", "/v1/me", "", "", "", 401)
 	call(t, f.handler, "DELETE", "/v1/me", token, "", "", 200)
+	call(t, f.handler, "DELETE", "/v1/me", token, "", "", 200)
 	call(t, f.handler, "GET", "/v1/me", token, "", "", 403)
 }
