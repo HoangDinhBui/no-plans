@@ -186,3 +186,5 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Đã thêm truy vấn lấy lease và ghi kết quả theo số lần claim cho từng lượt gửi. Còn cần kiểm thử PostgreSQL và nối worker với Expo.
 - Worker backend chạy bằng go run ./cmd/worker trong backend với DATABASE_URL và EXPO_ACCESS_TOKEN nếu Expo yêu cầu. Cần kiểm thử tích hợp và thu hồi token lỗi.
 - PostgreSQL 15: TestPushDelivery xác nhận lưu ticket, chặn ghi từ lease cũ, thu hồi đăng ký hết hiệu lực và giữ phiên đăng ký mới hơn. Worker chưa được thử trên thiết bị thật.
+- Mobile có lớp gọi PUT/DELETE đăng ký push theo scope của phiên API. Còn nối Expo Notifications, lưu ID cài đặt, và thu hồi trước khi đăng xuất.
+- Mobile: màn Hồ sơ có nút Bật thông báo trên iOS/Android và thu hồi thiết bị trước đăng xuất. Expo Notifications đã có trong lockfile. Node 24: typecheck và 31 unit test đã qua. Còn xử lý chạm thông báo và kiểm thử EAS trên thiết bị.
