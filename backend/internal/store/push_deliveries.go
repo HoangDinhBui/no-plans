@@ -19,14 +19,18 @@ func (s *Store) ExpandPushEvent(ctx context.Context, event OutboxEvent) (bool, e
 			SELECT e.id, d.user_id, d.id
 			FROM completed e
 			JOIN users actor ON actor.id = e.actor_id AND actor.deleted_at IS NULL
-			JOIN devices d ON d.user_id <> e.actor_id
+			JOIN devices d ON d.user_id <> e.actor_id OR e.kind = 'plan.reminder'
 			JOIN users recipient ON recipient.id = d.user_id AND recipient.deleted_at IS NULL
 			WHERE (
 				(e.kind IN ('friend.requested', 'friend.accepted', 'group.member_added')
 				 AND (e.payload->'recipient_ids') ? d.user_id::text)
 				OR
 				(e.kind IN ('plan.invited', 'plan.created') AND (e.payload->'recipient_ids') ? d.user_id::text AND EXISTS (SELECT 1 FROM plan_members m WHERE m.plan_id = e.plan_id AND m.user_id = d.user_id AND m.response = 'invited'))
-				OR (e.kind IN ('plan.updated', 'plan.confirm', 'plan.cancel')
+				OR (e.kind = 'plan.reminder' AND EXISTS (
+                    SELECT 1 FROM plan_members m
+                    WHERE m.plan_id = e.plan_id AND m.user_id = d.user_id AND m.response = 'going'
+                ))
+                OR (e.kind IN ('plan.updated', 'plan.confirm', 'plan.cancel')
 				 AND EXISTS (SELECT 1 FROM plan_members m WHERE m.plan_id = e.plan_id AND m.user_id = d.user_id))
 			)
 			AND NOT EXISTS (

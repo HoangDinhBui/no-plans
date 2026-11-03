@@ -16,6 +16,9 @@ type Transport interface {
 
 // ProcessNext expands one outbox event and processes one due device delivery.
 func ProcessNext(ctx context.Context, db *store.Store, transport Transport) (bool, error) {
+	if err := db.QueuePlanReminders(ctx); err != nil {
+		return false, err
+	}
 	events, err := db.ClaimOutbox(ctx, 1, 8, time.Minute)
 	if err != nil {
 		return false, err
@@ -33,6 +36,16 @@ func ProcessNext(ctx context.Context, db *store.Store, transport Transport) (boo
 		return false, err
 	}
 
+	if delivery.Kind == "plan.reminder" && delivery.TicketID == "" {
+		current, err := db.CurrentPlanReminder(ctx, delivery)
+		if err != nil {
+			return false, err
+		}
+		if !current {
+			_, err := db.ResolvePushDelivery(ctx, delivery, "", "ReminderSuperseded", nil)
+			return true, err
+		}
+	}
 	ticket, failure, delay := processDelivery(ctx, transport, delivery)
 	_, err = db.ResolvePushDelivery(ctx, delivery, ticket, failure, delay)
 	return true, err
@@ -59,8 +72,12 @@ func processDelivery(ctx context.Context, transport Transport, delivery store.Pu
 		return "", receipt.Details.Error, nil
 	}
 
+	body := "Bạn có thông báo mới"
+	if delivery.Kind == "plan.reminder" {
+		body = "Kèo của bạn sắp bắt đầu"
+	}
 	tickets, err := transport.Send(ctx, []Message{{
-		To: delivery.Token, Title: "NO PLANS", Body: "Bạn có thông báo mới",
+		To: delivery.Token, Title: "NO PLANS", Body: body,
 		Data: map[string]string{"eventId": delivery.EventID, "planId": delivery.PlanID, "recipientId": delivery.RecipientID},
 	}})
 	if err != nil || len(tickets) != 1 {
