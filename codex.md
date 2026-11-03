@@ -211,3 +211,6 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Hồi quy Playwright cục bộ đã qua toàn bộ 26 ca mobile web và 12 ca invite web.
 - Retention: thêm truy vấn dọn bản ghi quota API và lời mời ngoài cửa sổ 24 giờ. Còn lịch chạy worker và kiểm thử PostgreSQL.
 - TestPurgeExpiredQuotas đã qua trên PostgreSQL cục bộ. Backend CI PostgreSQL 17 và invite web CI đã qua tại 1e19fe2; mobile CI đang chạy.
+- Diễn tập PostgreSQL 15 cục bộ: dump/restore hai database fixture riêng, đối chiếu số lượng và checksum của migration và catalogue trùng khớp. Còn smoke API trên database khôi phục.
+- Restore drill PostgreSQL 15: /readyz HTTP 200, GET /v1/places xác thực HTTP 200 và 9 mục đúng bộ lọc mặc định people=1. SQL xác nhận 10 mục hoạt động, một mục yêu cầu tối thiểu hai người. Chưa diễn tập trên staging.
+- Backend CI PostgreSQL 17 đã qua tại bdc667a, gồm TestPurgeExpiredQuotas.
