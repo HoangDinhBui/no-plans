@@ -1,3 +1,4 @@
+import { ParticipantReport } from './ParticipantReport';
 import { useEffect, useRef, useState } from 'react';
 import type { Page, Participant, Plan } from '../lib/api';
 import { useSession } from '../lib/session';
@@ -20,7 +21,7 @@ export function PlanParticipants({ plan, actor, disabled, onChanged, onDenied }:
     finally { inFlight.current = false; if (mounted.current) setBusy(false); }
   }
   return <Card><Heading small>Hội mình có ai?</Heading>{members.loading && <Loading />}{members.error && <Copy error>{members.error.message}</Copy>}{!!error && <Copy error>{error}</Copy>}
-    {members.data?.items.map(member => <Card key={member.id}><Heading small>{member.display_name}</Heading><Copy>{responses[member.response]}{member.id === plan.owner_id ? ' · Chủ kèo' : member.id === actor ? ' · Bạn' : ''}</Copy>{owner && active && member.id !== actor && <Action secondary label={'Thu hồi lời mời của ' + member.display_name} disabled={busy || disabled || members.loading} onPress={() => setTarget(member)} />}</Card>)}
+    {members.data?.items.map(member => <Card key={member.id}><Heading small>{member.display_name}</Heading><Copy>{responses[member.response]}{member.id === plan.owner_id ? ' · Chủ kèo' : member.id === actor ? ' · Bạn' : ''}</Copy>{owner && active && member.id !== actor && <Action secondary label={'Thu hồi lời mời của ' + member.display_name} disabled={busy || disabled || members.loading} onPress={() => setTarget(member)} />}{member.id !== actor && <ParticipantReport planId={plan.id} targetId={member.id} name={member.display_name} />}</Card>)}
     {target && owner && active && members.data?.items.some(m => m.id === target.id) && <Card><Heading small>Thu hồi quyền vào kèo?</Heading><Copy>{target.display_name} sẽ không còn xem hay phản hồi kèo. Link cũ không cho người này tự vào lại; bạn có thể mời trực tiếp lại sau.</Copy><Action label="Xác nhận thu hồi thành viên" disabled={busy || disabled} onPress={() => { void revoke(); }} /><Action secondary label="Giữ lời mời" disabled={busy} onPress={() => setTarget(null)} /></Card>}
     {!!members.data?.next_cursor && <Action secondary label="Trang người tham gia tiếp" disabled={busy} onPress={() => { setTarget(null); setCursor(members.data!.next_cursor!); }} />}
     {!!cursor && <Action secondary label="Về trang người tham gia đầu" disabled={busy} onPress={() => { setTarget(null); setCursor(''); }} />}

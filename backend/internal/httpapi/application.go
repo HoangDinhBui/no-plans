@@ -42,6 +42,7 @@ func NewApplicationWithOptions(db *store.Store, verifier *auth.Verifier, email *
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/me", a.me)
 	mux.HandleFunc("/v1/devices/{deviceID}", a.device)
+	mux.HandleFunc("/v1/reports", a.report)
 	mux.HandleFunc("/v1/blocks", a.blocks)
 	mux.HandleFunc("/v1/blocks/{userID}", a.unblock)
 	mux.HandleFunc("/v1/groups", a.groups)

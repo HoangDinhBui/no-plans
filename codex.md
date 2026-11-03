@@ -195,3 +195,5 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Worker kiểm tra lại block, tài khoản, đăng ký thiết bị và quyền thành viên trước khi gửi. Còn bổ sung mute và test race sau khi xếp hàng.
 - Mute nhóm: migration 011, endpoint PUT /v1/groups/{groupID}/notifications và nút trên màn nhóm. Test PostgreSQL xác nhận thay đổi sau khi xếp hàng được worker tôn trọng. API/push và TypeScript đã qua; Playwright đang chạy.
 - Playwright: ca bật/tắt thông báo nhóm và giữ trạng thái sau reload đã qua với EXPO_OFFLINE=1.
+- An toàn: migration 012 thêm lưu báo cáo theo lý do có cấu trúc và tham chiếu người dùng/kèo. Còn bổ sung xác thực quyền, giới hạn gửi, API và UI.
+- Báo cáo thành viên trong kèo: API xác thực, giới hạn 10/24h, lý do cố định và UI chọn lý do. Test store/HTTP PostgreSQL, TypeScript và ca Playwright báo cáo đã qua.

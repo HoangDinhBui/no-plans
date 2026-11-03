@@ -9,7 +9,7 @@ const linkID = '00000000-0000-4000-8000-000000000020';
 const token = linkID + '.' + 'a'.repeat(43);
 async function fixture(page: Page, actor = alice) {
   const plan: Plan = { id: planID, owner_id: alice, title: 'Hội mình cà phê', activity: 'coffee', starts_at: '2030-01-01T12:30:00Z', location: 'Địa điểm riêng tư', capacity: 0, status: 'inviting', version: 1, members: { [alice]: 'going', [dave]: 'invited' } };
-  const state = { plan, links: [] as InviteLink[], keys: [] as string[], invites: [] as unknown[], revoked: [] as string[], requests: [] as string[], membersDenied: false };
+  const state = { plan, links: [] as InviteLink[], keys: [] as string[], invites: [] as unknown[], revoked: [] as string[], requests: [] as string[], membersDenied: false, reports: [] as unknown[] };
   const exp = Math.floor(Date.now() / 1000) + 3600;
   const user = { id: actor, aud: 'authenticated', role: 'authenticated', email: 'ban@example.com', app_metadata: {}, user_metadata: {}, identities: [], created_at: '2026-01-01T00:00:00Z' };
   const jwt = [Buffer.from('{"alg":"ES256"}').toString('base64url'), Buffer.from(JSON.stringify({ sub: actor, exp })).toString('base64url'), 'fixture'].join('.');
@@ -22,6 +22,10 @@ async function fixture(page: Page, actor = alice) {
     if (req.method() === 'OPTIONS') { await route.fulfill({ status: 204, headers }); return; }
     expect(req.headers().authorization).toBe('Bearer ' + jwt); state.requests.push(req.method() + ' ' + path);
     if (path === '/v1/plans/' + planID) { await route.fulfill({ headers, json: plan }); return; }
+    if (path === '/v1/reports' && req.method() === 'POST') {
+      state.reports.push(req.postDataJSON());
+      await route.fulfill({ status: 201, headers, json: { id: 'report-fixture' } }); return;
+    }
     if (path.endsWith('/members')) {
       if (state.membersDenied) { await route.fulfill({ status: 403, headers, json: { code: 'forbidden' } }); return; }
       const ids = url.searchParams.has('cursor') ? Object.keys(plan.members).filter(id => id === bob) : Object.keys(plan.members).filter(id => id !== bob);
@@ -86,4 +90,16 @@ test('member cannot fetch owner link metadata; member-list denial clears whole p
   await expect(page.getByText('Địa điểm riêng tư', { exact: true })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Alice', exact: true })).toHaveCount(0);
   await expect(page.getByRole('alert')).toContainText('không có quyền');
+});
+
+test('participant can report another participant with a selected reason', async ({ page }) => {
+  const state = await fixture(page);
+  await expect(page.getByRole('button', { name: 'Báo cáo Alice' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Báo cáo Dave' }).click();
+  const send = page.getByRole('button', { name: 'Gửi báo cáo' });
+  await expect(send).toBeDisabled();
+  await page.getByRole('button', { name: 'Tin rác' }).click();
+  await send.click();
+  await expect(page.getByText('Đã gửi báo cáo.')).toBeVisible();
+  expect(state.reports).toEqual([{ plan_id: planID, target_id: dave, reason: 'spam' }]);
 });
