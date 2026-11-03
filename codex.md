@@ -87,6 +87,12 @@ Web đề xuất hỗ trợ preview, đăng nhập và RSVP; chức năng đầy
 
 ## Quy ước lưu tiến độ
 
+## Outbox thông báo
+
+- Store đã có thao tác nhận sự kiện bằng PostgreSQL `FOR UPDATE SKIP LOCKED`, gia hạn quyền xử lý bằng lease khi nhận lại, và xác nhận theo số lần thử để loại phản hồi từ lease cũ.
+- Có thể hoàn tất hoặc lên lịch thử lại. Sự kiện hết số lần thử được chuyển sang dead letter khi đến lượt nhận tiếp.
+- Toàn bộ Go suite đã qua trên PostgreSQL cục bộ. Còn nối worker gửi, bảng thiết bị và theo dõi kết quả Expo Push.
+
 ## Deep links mobile — 2026-11-03
 
 - App nhận `no-plans://invite#token=…` qua Expo Router native intent. Link HTTPS trên web có nút mở app, và người nhận có thể tiếp tục ngay trên web. App lưu lời mời đang chờ bằng SecureStore trên native và sessionStorage trên Expo web.
