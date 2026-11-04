@@ -117,6 +117,14 @@ pg_restore --dbname $env:RESTORE_DATABASE_URL --no-owner --no-privileges --exit-
 - Đổi giờ, hủy kèo và tắt thông báo nhóm để kiểm tra lượt gửi còn chờ. Dùng tài khoản thử nghiệm riêng để kiểm tra xóa hồ sơ, thu hồi push và hoàn tất xóa danh tính.
 - Ghi phiên bản build, nền tảng, commit, kết quả và các bước tái hiện vào nhật ký kiểm thử.
 
+Từ `apps/mobile`, sau khi liên kết dự án và cấu hình môi trường `preview`, chạy:
+
+```powershell
+eas build --profile preview --platform all
+```
+
+Nếu dùng iOS ad hoc, đăng ký thiết bị bằng `eas device:create` trước khi build. [Hướng dẫn phân phối nội bộ của Expo](https://docs.expo.dev/build/internal-distribution/)
+
 ### Theo dõi hàng đợi push trên staging
 
 Chạy truy vấn chỉ đọc bằng tài khoản vận hành. Tuổi hàng đợi tính từ thời điểm sự kiện đến hạn, nên lời nhắc chưa đến giờ không làm tăng số liệu.
