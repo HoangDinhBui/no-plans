@@ -24,3 +24,25 @@ func TestDeliveryRetriesTransientHTTPFailures(t *testing.T) {
 		}
 	}
 }
+
+func TestDeliverySchedulesReceiptAfterTicket(t *testing.T) {
+	client := NewExpo("")
+	client.client.Transport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		body := `{"data":[{"status":"ok","id":"ticket"}]}`
+		if strings.HasSuffix(r.URL.Path, "/getReceipts") {
+			body = `{"data":{"ticket":{"status":"ok"}}}`
+		}
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(body))}, nil
+	})
+	delivery := store.PushDelivery{Token: "ExpoPushToken[fixture]", Attempt: 1}
+	ticket, failure, delay := processDelivery(context.Background(), client, delivery)
+	if ticket != "ticket" || failure != "" || delay == nil || delay.Minutes() != 15 {
+		t.Fatalf("send result: %q %q %v", ticket, failure, delay)
+	}
+	delivery.TicketID = ticket
+	delivery.Attempt++
+	ticket, failure, delay = processDelivery(context.Background(), client, delivery)
+	if ticket != "" || failure != "" || delay != nil {
+		t.Fatalf("receipt result: %q %q %v", ticket, failure, delay)
+	}
+}

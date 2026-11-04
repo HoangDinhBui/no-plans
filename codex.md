@@ -231,3 +231,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Worker phân loại lỗi HTTP Expo khi gửi và đọc receipt. Test HTTP giả lập xác nhận 429/503 được thử lại, 400 kết thúc lượt.
 - Mobile có EAS profile preview để phân phối nội bộ. Cần liên kết project, định danh bundle/package và cấu hình chứng chỉ trước khi build.
 - PostgreSQL 15: ca hồi quy xác nhận lời nhắc đã xếp hàng hết hiệu lực sau khi hủy kèo dù giờ bắt đầu giữ nguyên.
+- Kiểm thử worker với Expo giả lập xác nhận ticket lên lịch đọc receipt sau 15 phút và receipt ok kết thúc lượt gửi.
