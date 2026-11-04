@@ -226,3 +226,5 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Thiết kế ghi rõ retention hiện tại theo nhóm dữ liệu; thời hạn reports/audit/lịch sử và backup còn cần chốt.
 - README thêm truy vấn đo độ trễ outbox và số lượt push kết thúc có lỗi; số liệu hiện không bao gồm token bị thu hồi và xóa cascade.
 - Truy vấn giám sát README đã chạy thành công trong transaction chỉ đọc trên database fixture khôi phục PostgreSQL 15. Fixture không có lượt gửi để đo tỷ lệ thực tế.
+- README thêm lệnh tính p95 và tỷ lệ HTTP 5xx từ log JSON của API.
+- Đã chạy đoạn PowerShell trong README trên 20 dòng log mẫu: p95 190 ms, tỷ lệ 5xx 5%.

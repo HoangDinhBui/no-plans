@@ -134,3 +134,21 @@ WHERE completed_at >= now() - interval '1 hour';
 ```
 
 Tỷ lệ lỗi tính trên các lượt đã hoàn tất còn trong bảng. Lượt gửi bị xóa theo thiết bị khi Expo trả `DeviceNotRegistered` không nằm trong số liệu này.
+
+### Đo độ trễ HTTP trên staging
+
+Xuất log JSON của API trong cửa sổ kiểm thử thành `api.jsonl`. Đo riêng các thao tác không gọi dịch vụ ngoài khi đối chiếu mục tiêu p95 500 ms. Trộn các đợt tải khác nhau sẽ làm kết quả khó so sánh.
+
+```powershell
+$requests = @(Get-Content api.jsonl | ForEach-Object {
+    $entry = $_ | ConvertFrom-Json
+    if ($entry.msg -eq 'http request') { $entry }
+})
+if ($requests.Count -eq 0) { throw 'No HTTP requests in sample' }
+$durations = @($requests.duration_ms | Sort-Object)
+[pscustomobject]@{
+    Requests = $requests.Count
+    P95Milliseconds = $durations[([int][Math]::Ceiling(0.95 * $durations.Count) - 1)]
+    ServerErrorRate = @($requests | Where-Object { $_.status -ge 500 }).Count / $requests.Count
+}
+```
