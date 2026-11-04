@@ -116,3 +116,21 @@ pg_restore --dbname $env:RESTORE_DATABASE_URL --no-owner --no-privileges --exit-
 - Trên hai thiết bị, tạo kèo, gửi lời mời, mở link khi ứng dụng đang chạy và khi đã đóng, rồi phản hồi và chốt kèo. Xác nhận thông báo đến đúng tài khoản và mở đúng kèo.
 - Đổi giờ, hủy kèo và tắt thông báo nhóm để kiểm tra lượt gửi còn chờ. Dùng tài khoản thử nghiệm riêng để kiểm tra xóa hồ sơ, thu hồi push và hoàn tất xóa danh tính.
 - Ghi phiên bản build, nền tảng, commit, kết quả và các bước tái hiện vào nhật ký kiểm thử.
+
+### Theo dõi hàng đợi push trên staging
+
+Chạy truy vấn chỉ đọc bằng tài khoản vận hành. Tuổi hàng đợi tính từ thời điểm sự kiện đến hạn, nên lời nhắc chưa đến giờ không làm tăng số liệu.
+
+```sql
+SELECT count(*) AS outbox_due,
+       coalesce(max(extract(epoch FROM now() - available_at)), 0) AS oldest_due_seconds
+FROM outbox
+WHERE processed_at IS NULL AND dead_letter_at IS NULL AND available_at <= now();
+
+SELECT count(*) AS deliveries_completed,
+       count(*) FILTER (WHERE failure_code IS NOT NULL) AS deliveries_with_failure
+FROM push_deliveries
+WHERE completed_at >= now() - interval '1 hour';
+```
+
+Tỷ lệ lỗi tính trên các lượt đã hoàn tất còn trong bảng. Lượt gửi bị xóa theo thiết bị khi Expo trả `DeviceNotRegistered` không nằm trong số liệu này.

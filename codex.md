@@ -224,3 +224,5 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Thông báo chặn và báo cáo thành công có role status trên web. TypeScript và hai ca Playwright đã qua; VoiceOver/TalkBack còn kiểm tra trên thiết bị.
 - .env.example liệt kê các biến cấu hình worker Expo và Supabase Admin, để trống giá trị bí mật.
 - Thiết kế ghi rõ retention hiện tại theo nhóm dữ liệu; thời hạn reports/audit/lịch sử và backup còn cần chốt.
+- README thêm truy vấn đo độ trễ outbox và số lượt push kết thúc có lỗi; số liệu hiện không bao gồm token bị thu hồi và xóa cascade.
+- Truy vấn giám sát README đã chạy thành công trong transaction chỉ đọc trên database fixture khôi phục PostgreSQL 15. Fixture không có lượt gửi để đo tỷ lệ thực tế.
