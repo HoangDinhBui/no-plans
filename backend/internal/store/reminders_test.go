@@ -49,7 +49,13 @@ func TestPlanReminderBecomesStaleAfterReschedule(t *testing.T) {
 	if current, err := s.CurrentPlanReminder(ctx, delivery); err != nil || !current {
 		t.Fatalf("initial reminder: %v %v", current, err)
 	}
-	if _, err := s.db.Exec(ctx, "UPDATE plans SET starts_at=starts_at+interval '1 hour', version=version+1 WHERE id=$1", plan.ID); err != nil {
+	if _, err := s.db.Exec(ctx, "UPDATE plans SET status='cancelled' WHERE id=$1", plan.ID); err != nil {
+		t.Fatal(err)
+	}
+	if current, err := s.CurrentPlanReminder(ctx, delivery); err != nil || current {
+		t.Fatalf("cancelled reminder: %v %v", current, err)
+	}
+	if _, err := s.db.Exec(ctx, "UPDATE plans SET status='confirmed', starts_at=starts_at+interval '1 hour', version=version+1 WHERE id=$1", plan.ID); err != nil {
 		t.Fatal(err)
 	}
 	if current, err := s.CurrentPlanReminder(ctx, delivery); err != nil || current {
