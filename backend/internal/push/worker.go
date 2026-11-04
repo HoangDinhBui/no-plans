@@ -70,6 +70,10 @@ func processDelivery(ctx context.Context, transport Transport, delivery store.Pu
 		retry = 5 * time.Minute
 		receipts, err := transport.Receipts(ctx, []string{delivery.TicketID})
 		if err != nil {
+			var responseErr *HTTPError
+			if errors.As(err, &responseErr) && !responseErr.Retryable() {
+				return "", "ReceiptRequestRejected", nil
+			}
 			return "", "ReceiptRequestFailed", &retry
 		}
 		receipt, ready := receipts[delivery.TicketID]
@@ -91,6 +95,10 @@ func processDelivery(ctx context.Context, transport Transport, delivery store.Pu
 		Data: map[string]string{"eventId": delivery.EventID, "planId": delivery.PlanID, "recipientId": delivery.RecipientID},
 	}})
 	if err != nil || len(tickets) != 1 {
+		var responseErr *HTTPError
+		if errors.As(err, &responseErr) && !responseErr.Retryable() {
+			return "", "SendRequestRejected", nil
+		}
 		return "", "SendRequestFailed", &retry
 	}
 	ticket := tickets[0]
