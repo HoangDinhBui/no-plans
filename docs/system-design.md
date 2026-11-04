@@ -138,3 +138,12 @@ Mục tiêu beta đề xuất: API p95 dưới 500ms không tính dịch vụ ng
 - Màn hình vertical slice: đăng nhập, danh sách kèo, nhóm và thành viên, tạo kèo, chi tiết/RSVP/chốt/hủy, web invite. Tiêu chí nghiệm thu: hai tài khoản có thể chạy trọn luồng với dữ liệu bền vững qua restart; tài khoản thứ ba không có lời mời không đọc được chi tiết; tranh chỗ cuối không vượt capacity.
 
 Bắt đầu bằng vertical slice mobile Expo + API Go + PostgreSQL, dùng Supabase Auth cho đăng nhập; sau đó mở rộng đủ MVP theo các giai đoạn trên. Tiến độ thực tế nằm trong codex.md; chưa triển khai dịch vụ cloud hoặc phát hành.
+
+### Lưu giữ dữ liệu trong bản MVP
+
+| Dữ liệu | Xử lý hiện tại |
+| --- | --- |
+| Quota API và lời mời | Worker dọn bản ghi cũ hơn 24 giờ khi khởi động và mỗi giờ sau đó. |
+| Hồ sơ đã xóa | Tên và ảnh đại diện được ẩn danh ngay. Thiết bị bị thu hồi. Worker xử lý xóa danh tính Supabase khi có cấu hình quản trị. |
+| Báo cáo, lịch sử kèo và audit | Bản MVP hiện giữ các bản ghi này. Thời hạn lưu và quy trình xóa cần được chốt trước beta. |
+| Backup PostgreSQL | Quy trình diễn tập nằm trong README. Thời hạn lưu và lịch xóa bản backup cần được cấu hình trên staging trước beta. |
