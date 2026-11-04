@@ -233,3 +233,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - PostgreSQL 15: ca hồi quy xác nhận lời nhắc đã xếp hàng hết hiệu lực sau khi hủy kèo dù giờ bắt đầu giữ nguyên.
 - Kiểm thử worker với Expo giả lập xác nhận ticket lên lịch đọc receipt sau 15 phút và receipt ok kết thúc lượt gửi.
 - Backend Dockerfile đóng gói api, migrate, seed và worker. Backend CI có bước build image; Docker Engine cục bộ chưa khả dụng.
+- README thêm hướng dẫn build image và chạy riêng migration, API, worker với biến môi trường theo tiến trình.

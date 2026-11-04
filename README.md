@@ -160,3 +160,15 @@ $durations = @($requests.duration_ms | Sort-Object)
     ServerErrorRate = @($requests | Where-Object { $_.status -ge 500 }).Count / $requests.Count
 }
 ```
+
+### Chạy backend bằng container
+
+Từ thư mục gốc, build image rồi chạy migration trước khi khởi động API và worker. Các file môi trường do operator cấp. Dùng địa chỉ PostgreSQL mà container truy cập được và đặt `HTTP_ADDR=:8080` cho API.
+
+```powershell
+docker build -t no-plans-backend ./backend
+docker run --rm --env-file migration.env no-plans-backend migrate
+docker run --rm --env-file api.env -p 127.0.0.1:8080:8080 no-plans-backend api
+```
+
+Chạy worker ở tiến trình riêng với `docker run --rm --env-file worker.env no-plans-backend worker`. Dùng role migration riêng. Chỉ cấp khóa quản trị Supabase cho worker.
