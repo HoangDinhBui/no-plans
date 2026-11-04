@@ -35,3 +35,15 @@ jobs:
           cache-dependency-path: backend/go.sum
       - run: go test ./... -count=1
       - run: docker build --tag no-plans-backend:ci .
+      - name: Smoke test backend image
+        run: |
+          docker run --rm --network host -e DATABASE_URL="$TEST_DATABASE_URL" no-plans-backend:ci migrate
+          container=$(docker run -d --network host \
+            -e DATABASE_URL="$TEST_DATABASE_URL" \
+            -e HTTP_ADDR=127.0.0.1:18080 \
+            -e AUTH_ISSUER=http://localhost:54321/auth/v1 \
+            -e AUTH_AUDIENCE=authenticated \
+            no-plans-backend:ci)
+          trap 'docker logs "$container"; docker rm -f "$container"' EXIT
+          curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 1 \
+            http://127.0.0.1:18080/readyz

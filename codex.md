@@ -234,3 +234,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - Kiểm thử worker với Expo giả lập xác nhận ticket lên lịch đọc receipt sau 15 phút và receipt ok kết thúc lượt gửi.
 - Backend Dockerfile đóng gói api, migrate, seed và worker. Backend CI có bước build image; Docker Engine cục bộ chưa khả dụng.
 - README thêm hướng dẫn build image và chạy riêng migration, API, worker với biến môi trường theo tiến trình.
+- Backend CI bổ sung chạy migration từ image và kiểm tra /readyz qua PostgreSQL 17. Cần xác minh trên runner.
