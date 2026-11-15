@@ -172,3 +172,28 @@ docker run --rm --env-file api.env -p 127.0.0.1:8080:8080 no-plans-backend api
 ```
 
 Chạy worker ở tiến trình riêng với `docker run --rm --env-file worker.env no-plans-backend worker`. Dùng role migration riêng. Chỉ cấp khóa quản trị Supabase cho worker.
+
+### Triển khai thử nghiệm trên Railway
+
+Tạo project `no-plans`, kết nối repository `HoangDinhBui/no-plans` và chọn nhánh `feat/mvp-foundation` đang chứa MVP. Tạo hai service từ cùng repository, đặt Root Directory `/backend` cho cả hai. Railway sẽ dùng Dockerfile trong thư mục này. Service API chạy `api`, service worker chạy `worker`.
+
+Trước khi khởi động, cấp `DATABASE_URL` cho PostgreSQL staging. Publishable key Supabase chỉ dùng cho Auth, không thay thế mật khẩu PostgreSQL. Kết nối production phải dùng `sslmode=verify-full` và xác minh chứng chỉ máy chủ thành công. Chạy `migrate` bằng quyền migration trước, sau đó chạy `seed` một lần để nạp catalogue. Cấp quyền database phù hợp cho API và worker theo thiết kế phân quyền; không dùng tài khoản quản trị database làm cấu hình mặc định cho ứng dụng.
+
+Biến môi trường của API:
+
+```dotenv
+APP_ENV=production
+HTTP_ADDR=:8080
+AUTH_ISSUER=https://wevhoxqevnvrevkgyltj.supabase.co/auth/v1
+AUTH_AUDIENCE=authenticated
+AUTH_API_KEY=<Supabase publishable key>
+DATABASE_URL=<PostgreSQL staging URL với sslmode=verify-full>
+INVITE_TOKEN_SECRET=<base64 của 32 byte ngẫu nhiên, lưu cố định>
+CORS_ORIGINS=<HTTPS origin của web lời mời>
+```
+
+Worker cần `DATABASE_URL`, `SUPABASE_URL=https://wevhoxqevnvrevkgyltj.supabase.co` và `SUPABASE_SERVICE_ROLE_KEY` để xử lý xóa danh tính. Nếu bật xác thực Expo Push, cấp thêm `EXPO_ACCESS_TOKEN` cho worker.
+
+Tạo public domain cho API với target port `8080`, healthcheck `/readyz`. Worker không cần public domain. Sau khi API trả HTTP 200 ở `/readyz`, đặt URL HTTPS này vào `EXPO_PUBLIC_API_URL` của EAS preview và `VITE_API_URL` của web lời mời. Hoàn tất domain web rồi cập nhật `CORS_ORIGINS` và `EXPO_PUBLIC_INVITE_WEB_URL` trước khi thử luồng lời mời.
+
+Hướng dẫn nền tảng: [Railway monorepo](https://docs.railway.com/deployments/monorepo), [biến môi trường](https://docs.railway.com/variables). Đây là quy trình chuẩn bị, chưa phải bằng chứng đã triển khai hoặc đã kiểm thử staging.
