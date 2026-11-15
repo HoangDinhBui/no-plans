@@ -236,3 +236,4 @@ Cập nhật file này sau mỗi mốc đáng kể: thay đổi đã làm, kết
 - README thêm hướng dẫn build image và chạy riêng migration, API, worker với biến môi trường theo tiến trình.
 - Backend CI bổ sung chạy migration từ image và kiểm tra /readyz qua PostgreSQL 17. Cần xác minh trên runner.
 - CI tại b952e82: Backend 41834323302 và App 41834323287 đều qua. Smoke test chạy migration trong image và /readyz kết nối PostgreSQL 17 thành công.
+- Đã tạo và liên kết Expo project @hoangdinhbui1910/no-plans bằng eas init. Project ID đã ghi trong app.json; còn cấu hình định danh iOS/Android và API staging.
