@@ -8,9 +8,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.hoangdinhbui1910.noplans",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.hoangdinhbui1910.noplans",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
